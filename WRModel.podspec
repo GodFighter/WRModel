@@ -14,11 +14,11 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = '9.0'
     s.swift_version = '5.0'
 
-    s.subspec 'Common' do |ss|
-        ss.source_files = 'WRSwiftUtil/Common/*.swift'
+    s.subspec 'WRModel' do |ss|
+        ss.source_files = 'WRModel/*.swift'
     end
 
-    s.dependency 'RealmSwift', '3.20.0'
+    s.dependency 'FMDB'
     s.dependency 'KakaJSON', '1.1.1'
 
 end

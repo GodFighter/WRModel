@@ -34,7 +34,7 @@ class ViewController: UIViewController {
         let goods = Goods.create(json: dataJson)
         print("\(goods)")
         goods.goodsName = "goods.name"
-        goods.update()
+        goods.save()
         
         //
 //        print(dataJson["goodsId"] as Any)

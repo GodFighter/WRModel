@@ -14,6 +14,10 @@ public class WRObject : Convertible{
 
     public required init() {}
     
+    @objc public var table : String {
+        return "\(Self.self)"
+    }
+    
     @objc public var primaryKey : String? {
         return nil
     }
@@ -105,7 +109,7 @@ fileprivate typealias WRObject_DB = WRObject
 extension WRObject_DB {
 
     public func save() {
-        if WRDatabase.shared.open(), !WRDatabase.shared.tableExists("\(Self.self)") {
+        if WRDatabase.shared.open(), !WRDatabase.shared.tableExists("\(self.table)") {
             WRDatabase.shared.executeUpdate(self.createTableSql, withArgumentsIn: [])
             WRDatabase.shared.close()
         }
@@ -133,7 +137,7 @@ extension WRObject_DB {
             return
         }
         
-        WRDatabase.shared.executeUpdate("delete from \(Self.self) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
+        WRDatabase.shared.executeUpdate("delete from \(self.table) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
 
         var info : [(String, Any)] = [(String, Any)]()
         
@@ -148,7 +152,7 @@ extension WRObject_DB {
             return result.isEmpty ? "?" : result + ", ?"
         }
         
-        let insertSql = "insert into \(Self.self) (\(keys)) values(\(valueString))"
+        let insertSql = "insert into \(self.table) (\(keys)) values(\(valueString))"
 
         WRDatabase.shared.executeUpdate(insertSql, withArgumentsIn: info.map({ $0.1 }))
 
@@ -179,7 +183,7 @@ extension WRObject_DB {
             return
         }
         
-        WRDatabase.shared.executeUpdate("delete from \(Self.self) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
+        WRDatabase.shared.executeUpdate("delete from \(self.table) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
         
         WRDatabase.shared.close()
     }
@@ -222,8 +226,8 @@ extension WRObject_DB {
             $0.1
         })
 
-        let sql = "update \(Self.self) set \(keys) where \(primaryKey) = '\(value)'"
-        if let results = WRDatabase.shared.executeQuery("select * from \(Self.self) where \(primaryKey) = '\(value)'", withArgumentsIn: []) {
+        let sql = "update \(self.table) set \(keys) where \(primaryKey) = '\(value)'"
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.table) where \(primaryKey) = '\(value)'", withArgumentsIn: []) {
             results.next()
             if let _ = results.resultDictionary as? [String : Any]{
                 succeed = true
@@ -259,7 +263,7 @@ extension WRObject_SQL {
             
             cloumnsSql += columnSql(property) + (i == self.dbProperties.count - 1 ? ")" : ", ")
         }
-        return "create table if not exists \(Self.self) " + "(" + cloumnsSql
+        return "create table if not exists \(self.table) " + "(" + cloumnsSql
     }
 
 }

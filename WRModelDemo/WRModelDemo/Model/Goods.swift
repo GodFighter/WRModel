@@ -25,4 +25,8 @@ public class Goods : WRObject {
     public override var primaryKey: String? {
         return "goodsId"
     }
+    public override var table : String {
+        return "Good"
+    }
+
 }
