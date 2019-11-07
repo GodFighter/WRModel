@@ -5,4 +5,6 @@ inhibit_all_warnings!
 
 target 'WRModelDemo' do
     pod 'KakaJSON', '1.1.1'
+    pod 'FMDB'
+
 end

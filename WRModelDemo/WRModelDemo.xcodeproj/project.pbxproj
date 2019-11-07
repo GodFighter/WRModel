@@ -3,11 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		05864D7AB160A410F8E68CEC /* Pods_WRModelDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2EA6636C7D784BFC17DC049D /* Pods_WRModelDemo.framework */; };
+		BB4F14B62373BC250049D79C /* WRDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4F14B52373BC250049D79C /* WRDatabase.swift */; };
 		BBA1954C237260EA000EB41E /* GoodsEvaluate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA1954B237260EA000EB41E /* GoodsEvaluate.swift */; };
 		BBA1963B2372A41F000EB41E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBA1963A2372A41F000EB41E /* Foundation.framework */; };
 		BBAC698A23711F9A00BD32A7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBAC698923711F9A00BD32A7 /* AppDelegate.swift */; };
@@ -24,6 +25,7 @@
 		2EA6636C7D784BFC17DC049D /* Pods_WRModelDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WRModelDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		59EBEECBA43296554442F965 /* Pods-WRModelDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WRModelDemo.debug.xcconfig"; path = "Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		94D98A80E3B1AA8B26577DA2 /* Pods-WRModelDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WRModelDemo.release.xcconfig"; path = "Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo.release.xcconfig"; sourceTree = "<group>"; };
+		BB4F14B52373BC250049D79C /* WRDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WRDatabase.swift; sourceTree = "<group>"; };
 		BBA1954B237260EA000EB41E /* GoodsEvaluate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoodsEvaluate.swift; sourceTree = "<group>"; };
 		BBA1963A2372A41F000EB41E /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		BBAC698623711F9A00BD32A7 /* WRModelDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WRModelDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,6 +109,7 @@
 			isa = PBXGroup;
 			children = (
 				BBAC699E237120EB00BD32A7 /* WRObject.swift */,
+				BB4F14B52373BC250049D79C /* WRDatabase.swift */,
 			);
 			name = WRModel;
 			path = ../../WRModel;
@@ -240,6 +243,7 @@
 				BBAC699F237120EB00BD32A7 /* WRObject.swift in Sources */,
 				BBAC698E23711F9A00BD32A7 /* ViewController.swift in Sources */,
 				BBAC69A2237128C000BD32A7 /* Goods.swift in Sources */,
+				BB4F14B62373BC250049D79C /* WRDatabase.swift in Sources */,
 				BBAC698A23711F9A00BD32A7 /* AppDelegate.swift in Sources */,
 				BBA1954C237260EA000EB41E /* GoodsEvaluate.swift in Sources */,
 			);

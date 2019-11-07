@@ -12,17 +12,17 @@ import KakaJSON
 public class Goods : WRObject {
         
     var goodsId : String = ""
-    var goodsName : String = ""
+    var goodsName : NSString = ""
     var goodsSubtitle : String = ""
     var goodsDescription : String = ""
-    var storeId : Int = 0
+    var storeId : Double = 0
     var evaluates : [GoodsEvaluate]?
-    
+    var name : String = ""
 
-    override public func kj_modelKey(from property: Property) -> ModelPropertyKey {
-        switch property.name {
-        case "evaluates" : return "evaluateGoodsList"
-        default : return property.name
-        }
+    public override var exchangePropertys: [String : String] {
+        return ["evaluates" : "evaluateGoodsList"]
+    }
+    public override var primaryKey: String? {
+        return "goodsId"
     }
 }
