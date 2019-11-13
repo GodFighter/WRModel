@@ -10,15 +10,15 @@ import UIKit
 import KakaJSON
 
 //@objcMembers
-public class WRObject : Convertible{
+open class WRObject : Convertible{
 
     public required init() {}
     
-    @objc public var table : String {
+    @objc open var table : String {
         return "\(Self.self)"
     }
     
-    @objc public var primaryKey : String? {
+    @objc open var primaryKey : String? {
         return nil
     }
 
@@ -107,6 +107,46 @@ extension WRObject_Convertible {
 //MARK:-
 fileprivate typealias WRObject_DB = WRObject
 extension WRObject_DB {
+    
+    public func select_table() -> [[String : Any]] {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            return []
+        }
+        
+        var infos : [[String:Any]] = []
+        
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.table)", withArgumentsIn: []){
+            
+            results.next()
+            if let info = results.resultDictionary as? [String : Any]{
+                infos.append(info)
+            }
+            results.close()
+        }
+        
+        WRDatabase.shared.close()
+        return infos
+    }
+    
+    public func select(_ primaryKey : String) -> [String:Any]? {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            return nil
+        }
+        
+        var userInfo : [String:Any]? = nil
+        
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.table) where id = '\(primaryKey)'", withArgumentsIn: []){
+            
+            results.next()
+            if let info = results.resultDictionary as? [String : Any]{
+                userInfo = info
+            }
+            results.close()
+        }
+        
+        WRDatabase.shared.close()
+        return userInfo
+    }
 
     public func save() {
         if WRDatabase.shared.open(), !WRDatabase.shared.tableExists("\(self.table)") {

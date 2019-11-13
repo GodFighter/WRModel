@@ -34,8 +34,9 @@ class ViewController: UIViewController {
         let goods = Goods.create(json: dataJson)
         print("\(goods)")
         goods.goodsName = "goods.name"
-        goods.save()
-        
+//        goods.save()
+        let info = goods.select_table()
+        print("\(info)")
         //
 //        print(dataJson["goodsId"] as Any)
                              
