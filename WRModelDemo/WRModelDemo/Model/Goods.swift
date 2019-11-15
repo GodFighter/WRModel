@@ -14,7 +14,7 @@ public class Goods : WRObject {
     var goodsId : String = ""
     var goodsName : NSString = ""
     var goodsSubtitle : String = ""
-    var goodsDescription : String = ""
+    var goodsDescription : String?
     var storeId : Double = 0
     var evaluates : [GoodsEvaluate]?
     var name : String = ""

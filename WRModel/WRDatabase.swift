@@ -30,11 +30,16 @@ public class WRDatabase: FMDatabase {
     
     internal static func type(_ type : String) -> DatabaseDataType {
         switch type {
-        case "String", "NSString":                                  return .text
-        case "Int", "UInt", "UInt8", "Int8", "UInt16", "Int16":     return .int
-        case "UInt32", "Int32", "UInt64", "Int64":                  return .long
-        case "Bool":                                                return .bool
-        case "Float", "CGFloat", "Double":                          return .float
+        case "String", "Optional<String>", "NSString", "Optional<NSString>":
+            return .text
+        case "Int", "Optional<Int>", "UInt", "Optional<UInt>", "UInt8", "Optional<UInt8>", "Int8", "Optional<Int8>", "UInt16", "Optional<UInt16>", "Int16", "Optional<Int16>":
+            return .int
+        case "UInt32", "Optional<UInt32>", "Int32", "Optional<Int32>", "UInt64", "Optional<UInt64>", "Int64", "Optional<Int64>":
+            return .long
+        case "Bool", "Optional<Bool>":
+            return .bool
+        case "Float", "Optional<Float>", "CGFloat", "Optional<CGFloat>", "Double", "Optional<Double>":
+            return .float
         default:
             return .unknown
         }
