@@ -27,10 +27,14 @@ open class WRObject : Convertible{
     open var exchangePropertys :  [[String : String]] {
         return [[:]]
     }
+    
+    open var ignoreDBPropertys : [String] {
+        return []
+    }
 
 }
 
-//MARK:- 
+//MARK:-
 public extension WRObject {
     static func create(json : [String : Any]) -> Self {
         return json.kj.model(type: Self.self) as! Self
@@ -67,6 +71,9 @@ extension WRObject_Convertible {
         
         for property in self.allProperties {
             guard WRDatabase.type("\(property.type)") != .unknown else {
+                continue
+            }
+            if self.ignoreDBPropertys.contains(property.name) {
                 continue
             }
             if property.name == self.primaryKey {
