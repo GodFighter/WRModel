@@ -19,8 +19,8 @@ public class Goods : WRObject {
     var evaluates : [GoodsEvaluate]?
     var name : String = ""
 
-    public override var exchangePropertys: [String : String] {
-        return ["evaluates" : "evaluateGoodsList"]
+    public override var exchangePropertys: [[String : String]] {
+        return [["evaluates" : "evaluateGoodsList"]]
     }
     public override var primaryKey: String? {
         return "goodsId"

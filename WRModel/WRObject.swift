@@ -24,6 +24,10 @@ open class WRObject : Convertible{
 
     fileprivate var primaryKeyProperty : Property?
 
+    open var exchangePropertys :  [[String : String]] {
+        return [[:]]
+    }
+
 }
 
 //MARK:- 
@@ -32,9 +36,6 @@ public extension WRObject {
         return json.kj.model(type: Self.self) as! Self
     }
     
-    @objc var exchangePropertys :  [String : String] {
-        return [:]
-    }
     
 }
 
@@ -43,16 +44,13 @@ fileprivate typealias WRObject_Convertible = WRObject
 extension WRObject_Convertible {
 
     public func kj_modelKey(from property: Property) -> ModelPropertyKey {
-        let needExchange = self.exchangePropertys.contains { (newProperty, oldProperty) -> Bool in
-            if newProperty == property.name {
-                return true
+
+        for info in self.exchangePropertys {
+            if info.keys.first == property.name {
+                return info[property.name]!
             }
-            return false
         }
         
-        if needExchange {
-            return self.exchangePropertys[property.name]!
-        }
         return property.name
     }
     
@@ -182,7 +180,15 @@ extension WRObject_DB {
         var info : [(String, Any)] = [(String, Any)]()
         
         for property in self.dbProperties {
-            info.append((property.name, self.valueForProperty(property) as Any))
+            var name = property.name
+            for info in self.exchangePropertys {
+                if info.keys.first == property.name {
+                    name = info[property.name]!
+                    break
+                }
+            }
+
+            info.append((name, self.valueForProperty(property) as Any))
         }
         let keys = info.map({
             $0.0
@@ -291,11 +297,20 @@ extension WRObject_SQL {
         
         func columnSql(_ property : Property) -> String {
             let typeName = WRDatabase.typeStirng(WRDatabase.type("\(property.type)")) ?? ""
-            if property.name == self.primaryKey {
-                return property.name + " " + typeName + " primary key"
+            
+            var name = property.name
+            for info in self.exchangePropertys {
+                if info.keys.first == property.name {
+                    name = info[property.name]!
+                    break
+                }
             }
 
-            return property.name + " " + typeName
+            if name == self.primaryKey {
+                return name + " " + typeName + " primary key"
+            }
+
+            return name + " " + typeName
         }
         
         for i in 0..<self.dbProperties.count {
