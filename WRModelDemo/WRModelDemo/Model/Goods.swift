@@ -28,5 +28,13 @@ public class Goods : WRObject {
     public override var table : String {
         return "Good"
     }
+    
+    override public func kj_willConvertToModel(from json: [String : Any]) {
+        
+    }
+
+    override public func kj_didConvertToModel(from json: [String : Any]) {
+        
+    }
 
 }

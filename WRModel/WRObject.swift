@@ -40,7 +40,14 @@ public extension WRObject {
         return json.kj.model(type: Self.self) as! Self
     }
     
+    @objc func kj_willConvertToModel(from json: [String: Any]) {
     
+    }
+    
+    @objc func kj_didConvertToModel(from json: [String: Any]) {
+    
+    }
+
 }
 
 //MARK:-
