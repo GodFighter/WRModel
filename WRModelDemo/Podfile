@@ -1,4 +1,6 @@
 # 需要放在子目录同级文件夹
+source 'https://github.com/CocoaPods/Specs.git'
+
 platform :ios, '9.0'
 use_frameworks!
 inhibit_all_warnings!

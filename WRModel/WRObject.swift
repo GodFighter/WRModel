@@ -32,6 +32,14 @@ open class WRObject : Convertible{
         return []
     }
 
+    @objc open func kj_willConvertToModel(from json: [String: Any]) {
+    
+    }
+    
+    @objc open func kj_didConvertToModel(from json: [String: Any]) {
+    
+    }
+
 }
 
 //MARK:-
@@ -39,15 +47,6 @@ public extension WRObject {
     static func create(json : [String : Any]) -> Self {
         return json.kj.model(type: Self.self) as! Self
     }
-    
-    @objc func kj_willConvertToModel(from json: [String: Any]) {
-    
-    }
-    
-    @objc func kj_didConvertToModel(from json: [String: Any]) {
-    
-    }
-
 }
 
 //MARK:-
