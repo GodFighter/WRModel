@@ -273,10 +273,19 @@ extension WRObject_DB {
         
         var succeed : Bool = false
         var info : [(String, Any)] = [(String, Any)]()
-        
+                
         for property in self.dbProperties {
-            info.append((property.name, self.valueForProperty(property) as Any))
+            var name = property.name
+            for info in self.exchangePropertys {
+                if info.keys.first == property.name {
+                    name = info[property.name]!
+                    break
+                }
+            }
+
+            info.append((name, self.valueForProperty(property) as Any))
         }
+
         let keys = info.map({
             $0.0 + " = ?"
         }).joined(separator: " , ")
