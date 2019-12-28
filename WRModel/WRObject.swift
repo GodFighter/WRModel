@@ -128,9 +128,10 @@ extension WRObject_DB {
         
         if let results = WRDatabase.shared.executeQuery("select * from \(self.table)", withArgumentsIn: []){
             
-            results.next()
-            if let info = results.resultDictionary as? [String : Any]{
-                infos.append(info)
+            while results.next(){
+                if let info = results.resultDictionary as? [String : Any]{
+                    infos.append(info)
+                }
             }
             results.close()
         }
@@ -139,6 +140,27 @@ extension WRObject_DB {
         return infos
     }
     
+    public func select(_ column : String, key : String) -> [[String:Any]] {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            return []
+        }
+        
+        var infos : [[String:Any]] = []
+        
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.table) where \(column) = '\(key)'", withArgumentsIn: []){
+            
+            while results.next(){
+             if let info = results.resultDictionary as? [String : Any]{
+                infos.append(info)
+                }
+            }
+            results.close()
+        }
+        
+        WRDatabase.shared.close()
+        return infos
+    }
+
     public func select(_ primaryKey : String) -> [String:Any]? {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return nil
