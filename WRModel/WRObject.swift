@@ -119,7 +119,7 @@ extension WRObject_Convertible {
 fileprivate typealias WRObject_DB = WRObject
 extension WRObject_DB {
     
-    public func select_table() -> [[String : Any]] {
+    @objc open func select_table() -> [[String : Any]] {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return []
         }
@@ -140,7 +140,7 @@ extension WRObject_DB {
         return infos
     }
     
-    public func select(_ column : String, key : String) -> [[String:Any]] {
+    @objc open func select(_ column : String, key : String) -> [[String:Any]] {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return []
         }
@@ -161,7 +161,7 @@ extension WRObject_DB {
         return infos
     }
 
-    public func select(_ primaryKey : String) -> [String:Any]? {
+    @objc open func select(_ primaryKey : String) -> [String:Any]? {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return nil
         }
@@ -181,7 +181,7 @@ extension WRObject_DB {
         return userInfo
     }
 
-    public func save() {
+    @objc open func save() {
         if WRDatabase.shared.open(), !WRDatabase.shared.tableExists("\(self.table)") {
             WRDatabase.shared.executeUpdate(self.createTableSql, withArgumentsIn: [])
             WRDatabase.shared.close()
@@ -240,7 +240,7 @@ extension WRObject_DB {
         WRDatabase.shared.close()
     }
     
-    public func delete() {
+    @objc open func delete() {
         
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return
@@ -269,7 +269,7 @@ extension WRObject_DB {
         WRDatabase.shared.close()
     }
     
-    public func update() {
+    @objc open func update() {
         
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return
