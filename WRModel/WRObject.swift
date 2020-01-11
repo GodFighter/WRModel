@@ -9,69 +9,112 @@
 import UIKit
 import KakaJSON
 
-//@objcMembers
-open class WRObject : Convertible{
-
-    public required init() {}
+//MARK:-
+@objc extension NSObject : WRObjectProtocol, Convertible {
+    //MARK: property
+    public var db: WRObjectExtension {
+        return WRObjectExtension(self)
+    }
     
     @objc open var table : String {
-        return "\(Self.self)"
+        get {
+            return self.db.table
+        }
     }
     
     @objc open var primaryKey : String? {
-        return nil
-    }
-
-    fileprivate var primaryKeyProperty : Property?
-
-    open var exchangePropertys :  [[String : String]] {
-        return [[:]]
+        get {
+            return self.db.primaryKey
+        }
     }
     
-    open var ignoreDBPropertys : [String] {
+    @objc open var exchangePropertys :  [[String : String]] {
+        get {
+            return self.db.exchangePropertys
+        }
+    }
+
+    @objc open var ignoreDBPropertys : [String] {
+        get {
+            return self.db.ignoreDBPropertys
+        }
+    }
+
+    //MARK: func
+    @objc public static func create(json : [String : Any]) -> Self {
+        return json.kj.model(type: self) as! Self
+    }
+
+
+    public func kj_willConvertToModel(from json: [String: Any]) {
+        self.perform(#selector(wr_willConvertToModel(from:)), with: json)
+    }
+    
+    public func kj_didConvertToModel(from json: [String: Any]) {
+        self.perform(#selector(wr_didConvertToModel(from:)), with: json)
+    }
+    
+    @objc open func wr_willConvertToModel(from json: [String: Any]) {
+        
+    }
+
+    @objc open func wr_didConvertToModel(from json: [String: Any]) {
+        
+    }
+
+}
+
+@objc public protocol WRObjectProtocol{
+    var db: WRObjectExtension { get }
+}
+
+//MARK:-
+@objc open class WRObjectExtension : NSObject {
+    //MARK: life
+    public required override init() {
+        super.init()
+    }
+    
+    @objc public init(_ value: NSObject){
+        super.init()
+        self.value = value
+    }
+    //MARK: property
+    @objc open var value: NSObject = NSObject()
+    
+    @objc override open var table : String {
+        get {
+            return "\(self.value.classForCoder)"
+        }
+    }
+    
+    @objc override open var primaryKey : String? {
+        get {
+            return nil
+        }
+    }
+
+    @objc override open var exchangePropertys :  [[String : String]] {
+        get {
+            return [[:]]
+        }
+    }
+
+    @objc override open var ignoreDBPropertys : [String] {
         return []
     }
-
-    @objc open func kj_willConvertToModel(from json: [String: Any]) {
     
-    }
-    
-    @objc open func kj_didConvertToModel(from json: [String: Any]) {
-    
-    }
+    fileprivate var primaryKeyProperty : Property?
 
-}
-
-//MARK:-
-public extension WRObject {
-    static func create(json : [String : Any]) -> Self {
-        return json.kj.model(type: Self.self) as! Self
-    }
-}
-
-//MARK:-
-fileprivate typealias WRObject_Convertible = WRObject
-extension WRObject_Convertible {
-
-    public func kj_modelKey(from property: Property) -> ModelPropertyKey {
-
-        for info in self.exchangePropertys {
-            if info.keys.first == property.name {
-                return info[property.name]!
-            }
-        }
-        
-        return property.name
-    }
-    
+    //MARK: func
     fileprivate var allProperties : [Property] {
-        guard let mt = Metadata.type(self) as? ModelType else {
+        guard let mt = Metadata.type(self.value) as? ModelType else {
             debugPrint("Not a class or struct instance.")
             return []
         }
         return mt.properties ?? []
     }
-    
+
     fileprivate var dbProperties : [Property] {
         var dbProperties = [Property]()
         
@@ -79,10 +122,10 @@ extension WRObject_Convertible {
             guard WRDatabase.type("\(property.type)") != .unknown else {
                 continue
             }
-            if self.ignoreDBPropertys.contains(property.name) {
+            if self.value.ignoreDBPropertys.contains(property.name) {
                 continue
             }
-            if property.name == self.primaryKey {
+            if property.name == self.value.primaryKey {
                 dbProperties.insert(property, at: 0)
                 self.primaryKeyProperty = property
             } else {
@@ -101,12 +144,12 @@ extension WRObject_Convertible {
         }
         return nil
     }
-    
+
     fileprivate func valueForProperty(_ property : Property?) -> Any? {
         guard property != nil else {
             return nil
         }
-        for children in Mirror(reflecting: self).children {
+        for children in Mirror(reflecting: self.value).children {
             if children.label == property!.name {
                 return children.value
             }
@@ -116,9 +159,9 @@ extension WRObject_Convertible {
 }
 
 //MARK:-
-fileprivate typealias WRObject_DB = WRObject
-extension WRObject_DB {
-    
+fileprivate typealias WRObjectExtension_DB = WRObjectExtension
+extension WRObjectExtension_DB {
+    /// 查找指定表中所有数据
     @objc open func select_table() -> [[String : Any]] {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return []
@@ -126,7 +169,7 @@ extension WRObject_DB {
         
         var infos : [[String:Any]] = []
         
-        if let results = WRDatabase.shared.executeQuery("select * from \(self.table)", withArgumentsIn: []){
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table)", withArgumentsIn: []){
             
             while results.next(){
                 if let info = results.resultDictionary as? [String : Any]{
@@ -140,14 +183,15 @@ extension WRObject_DB {
         return infos
     }
     
-    @objc open func select(_ column : String, key : String) -> [[String:Any]] {
+    /// 查找指定列的数据
+    @objc open func select(_ column : String, value : String) -> [[String:Any]] {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return []
         }
         
         var infos : [[String:Any]] = []
         
-        if let results = WRDatabase.shared.executeQuery("select * from \(self.table) where \(column) = '\(key)'", withArgumentsIn: []){
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table) where \(column) = '\(value)'", withArgumentsIn: []){
             
             while results.next(){
              if let info = results.resultDictionary as? [String : Any]{
@@ -161,28 +205,13 @@ extension WRObject_DB {
         return infos
     }
 
-    @objc open func select(_ primaryKey : String) -> [String:Any]? {
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            return nil
-        }
-        
-        var userInfo : [String:Any]? = nil
-        
-        if let results = WRDatabase.shared.executeQuery("select * from \(self.table) where id = '\(primaryKey)'", withArgumentsIn: []){
-            
-            results.next()
-            if let info = results.resultDictionary as? [String : Any]{
-                userInfo = info
-            }
-            results.close()
-        }
-        
-        WRDatabase.shared.close()
-        return userInfo
-    }
-
+    ///保存数据
+    /**
+ 
+    无主键暂不可保存
+    */
     @objc open func save() {
-        if WRDatabase.shared.open(), !WRDatabase.shared.tableExists("\(self.table)") {
+        if WRDatabase.shared.open(), !WRDatabase.shared.tableExists("\(self.value.table)") {
             WRDatabase.shared.executeUpdate(self.createTableSql, withArgumentsIn: [])
             WRDatabase.shared.close()
         }
@@ -192,7 +221,7 @@ extension WRObject_DB {
             return
         }
 
-        guard let primaryKey = self.primaryKey else {
+        guard let primaryKey = self.value.primaryKey else {
             // 无主键
             return
         }
@@ -210,13 +239,13 @@ extension WRObject_DB {
             return
         }
         
-        WRDatabase.shared.executeUpdate("delete from \(self.table) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
+        WRDatabase.shared.executeUpdate("delete from \(self.value.table) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
 
         var info : [(String, Any)] = [(String, Any)]()
         
         for property in self.dbProperties {
             var name = property.name
-            for info in self.exchangePropertys {
+            for info in self.value.exchangePropertys {
                 if info.keys.first == property.name {
                     name = info[property.name]!
                     break
@@ -233,20 +262,21 @@ extension WRObject_DB {
             return result.isEmpty ? "?" : result + ", ?"
         }
         
-        let insertSql = "insert into \(self.table) (\(keys)) values(\(valueString))"
+        let insertSql = "insert into \(self.value.table) (\(keys)) values(\(valueString))"
 
         WRDatabase.shared.executeUpdate(insertSql, withArgumentsIn: info.map({ $0.1 }))
 
         WRDatabase.shared.close()
     }
-    
+
+    /// 删除单条数据
     @objc open func delete() {
         
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return
         }
         
-        guard let primaryKey = self.primaryKey else {
+        guard let primaryKey = self.value.primaryKey else {
             // 无主键
             return
         }
@@ -264,18 +294,31 @@ extension WRObject_DB {
             return
         }
         
-        WRDatabase.shared.executeUpdate("delete from \(self.table) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
+        WRDatabase.shared.executeUpdate("delete from \(self.value.table) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
         
         WRDatabase.shared.close()
     }
+
+    /// 删除对象所存表单
+    @objc open func deleteAll() {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            return
+        }
+        WRDatabase.shared.executeUpdate("delete from \(self.value.table)", withArgumentsIn: [])
+        WRDatabase.shared.close()
+    }
     
+    /// 更新单条数据所有数据
+       /**
+     无主键暂不可更新
+       */
     @objc open func update() {
         
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             return
         }
         
-        guard let primaryKey = self.primaryKey else {
+        guard let primaryKey = self.value.primaryKey else {
             // 无主键
             return
         }
@@ -294,30 +337,30 @@ extension WRObject_DB {
         }
         
         var succeed : Bool = false
-        var info : [(String, Any)] = [(String, Any)]()
+        var infos : [(String, Any)] = [(String, Any)]()
                 
         for property in self.dbProperties {
             var name = property.name
-            for info in self.exchangePropertys {
+            for info in self.value.exchangePropertys {
                 if info.keys.first == property.name {
                     name = info[property.name]!
                     break
                 }
             }
 
-            info.append((name, self.valueForProperty(property) as Any))
+            infos.append((name, self.valueForProperty(property) as Any))
         }
 
-        let keys = info.map({
+        let keys = infos.map({
             $0.0 + " = ?"
         }).joined(separator: " , ")
         
-        let values = info.map({
+        let values = infos.map({
             $0.1
         })
 
-        let sql = "update \(self.table) set \(keys) where \(primaryKey) = '\(value)'"
-        if let results = WRDatabase.shared.executeQuery("select * from \(self.table) where \(primaryKey) = '\(value)'", withArgumentsIn: []) {
+        let sql = "update \(self.value.table) set \(keys) where \(primaryKey) = '\(value)'"
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table) where \(primaryKey) = '\(value)'", withArgumentsIn: []) {
             results.next()
             if let _ = results.resultDictionary as? [String : Any]{
                 succeed = true
@@ -330,11 +373,100 @@ extension WRObject_DB {
         }
         WRDatabase.shared.close()
     }
+    
+    /// 更新表单指定列
+    /// - Parameter columns: 列名
+    /// - Parameter values: 列数据
+    /// - Parameter replaceValues: 替换数据
+    @objc open func updateTable(_ columns : [String], values: [Any], replaceValues: [Any]) {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            return
+        }
+        
+        var dbColumns = ""
+        var replaceColumns = ""
+        
+        for i in 0..<columns.count {
+            let dbColumnName = columns[i]
+            let replaceValue = replaceValues[i]
+            let dbValue = values[i]
+            
+            dbColumns += (dbColumnName + " = " + "'\(dbValue)'" + (i != columns.count - 1 ? " and " : ""))
+            replaceColumns += (dbColumnName + " = " + "'\(replaceValue)'" + (i != columns.count - 1 ? " , " : ""))
+        }
+            
+        let sql = "update \(self.value.table) set \(replaceColumns) where \(dbColumns)"
+        if let results = WRDatabase.shared.executeQuery(sql, withArgumentsIn: []) {
+            while results.next(){
+            }
+            results.close()
+        }
+        WRDatabase.shared.close()
+
+    }
+
+    /// 更新单条数据指定定列
+    ///
+    /**
+     无主键暂不可更新
+     */
+    /// - Parameter columns: 列名
+    /// - Parameter values: 替换值
+    @objc open func update(_ columns : [String], values: [Any]) {
+        
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            return
+        }
+        
+        guard let primaryKey = self.value.primaryKey else {
+            // 无主键
+            return
+        }
+        
+        if self.primaryKeyProperty == nil {
+            self.primaryKeyProperty = self.propertyWithName(primaryKey)
+        }
+        
+        guard let property = self.primaryKeyProperty else {
+            // 无主键属性
+            return
+        }
+        guard let value = self.valueForProperty(property) else {
+            // 无主键值
+            return
+        }
+        
+        var succeed : Bool = false
+
+        var replaceColumns = ""
+        for i in 0..<columns.count {
+            let dbColumnName = columns[i]
+            let replaceValue = values[i]
+            
+            replaceColumns += (dbColumnName + " = " + "'\(replaceValue)'" + (i != columns.count - 1 ? " , " : ""))
+        }
+
+        let sql = "update \(self.value.table) set \(replaceColumns) where \(primaryKey) = '\(value)'"
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table) where \(primaryKey) = '\(value)'", withArgumentsIn: []) {
+            results.next()
+            if let _ = results.resultDictionary as? [String : Any]{
+                succeed = true
+            }
+            results.close()
+        }
+
+        if succeed{
+            succeed = WRDatabase.shared.executeUpdate(sql, withArgumentsIn: values)
+        }
+        WRDatabase.shared.close()
+
+    }
+
 }
 
 //MARK:-
-fileprivate typealias WRObject_SQL = WRObject
-extension WRObject_SQL {
+fileprivate typealias WRObjectExtension_SQL = WRObjectExtension
+extension WRObjectExtension_SQL {
     
     fileprivate var createTableSql : String {
         var cloumnsSql = ""
@@ -343,14 +475,14 @@ extension WRObject_SQL {
             let typeName = WRDatabase.typeStirng(WRDatabase.type("\(property.type)")) ?? ""
             
             var name = property.name
-            for info in self.exchangePropertys {
+            for info in self.value.exchangePropertys {
                 if info.keys.first == property.name {
                     name = info[property.name]!
                     break
                 }
             }
 
-            if name == self.primaryKey {
+            if name == self.value.primaryKey {
                 return name + " " + typeName + " primary key"
             }
 
@@ -362,9 +494,6 @@ extension WRObject_SQL {
             
             cloumnsSql += columnSql(property) + (i == self.dbProperties.count - 1 ? ")" : ", ")
         }
-        return "create table if not exists \(self.table) " + "(" + cloumnsSql
+        return "create table if not exists \(self.value.table) " + "(" + cloumnsSql
     }
-
 }
-
-

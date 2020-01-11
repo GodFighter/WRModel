@@ -30,17 +30,14 @@ class ViewController: UIViewController {
         } catch {
             print("error")
         }
-        
+                
         let goods = Goods.create(json: dataJson)
-        print("\(goods)")
-        goods.goodsName = "goods.name"
-        goods.save()
-//        let info = goods.select_table()
-//        print("\(info)")
-        //
-//        print(dataJson["goodsId"] as Any)
-                             
+        goods.storeId = 50
+        goods.goodsSubtitle = ""
+//        goods.db.save()
+        goods.db.update(["storeId"], values: [76543])
         
+        print("\(goods)")
 
     }
 

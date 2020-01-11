@@ -9,7 +9,8 @@
 import UIKit
 import KakaJSON
 
-public class Goods : WRObject {
+public class Goods : NSObject {
+        
         
     var goodsId : String = ""
     var goodsName : NSString = ""
@@ -18,23 +19,50 @@ public class Goods : WRObject {
     var storeId : Double = 0
     var evaluates : [GoodsEvaluate]?
     var name : String = ""
-
-    public override var exchangePropertys: [[String : String]] {
-        return [["evaluates" : "evaluateGoodsList"]]
+    
+    public override init() {
+        super.init()        
     }
-    public override var primaryKey: String? {
-        return "goodsId"
-    }
-    public override var table : String {
+    
+    public override var table: String {
         return "Good"
     }
     
-    override public func kj_willConvertToModel(from json: [String : Any]) {
-        
+    public override var primaryKey: String? {
+        return "goodsId"
     }
-
-    override public func kj_didConvertToModel(from json: [String : Any]) {
-        
+    
+    override public func wr_willConvertToModel(from json: [String : Any]) {
+        print("wr_willConvertToModel")
     }
+    
+    override public func wr_didConvertToModel(from json: [String : Any]) {
+        print("wr_didConvertToModel")
+    }
+    
 
+    
+    
+//    public override var primaryKey: String? {
+//        return "goodsId"
+//    }
+
+//    public override var exchangePropertys: [[String : String]] {
+//        return [["evaluates" : "evaluateGoodsList"]]
+//    }
+//    public override var primaryKey: String? {
+//        return "goodsId"
+//    }
+//    public override var table : String {
+//        return "Good"
+//    }
+//
+//    override public func kj_willConvertToModel(from json: [String : Any]) {
+//
+//    }
+//
+//    override public func kj_didConvertToModel(from json: [String : Any]) {
+//
+//    }
+    
 }

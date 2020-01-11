@@ -8,7 +8,7 @@
 
 import UIKit
 
-class GoodsEvaluate: WRObject {
+class GoodsEvaluate: NSObject {
     var gevalId : String = ""
     var gevalFrommembername : String = ""
     var gevalImage : String = ""
