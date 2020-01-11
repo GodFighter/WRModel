@@ -11,7 +11,7 @@ import KakaJSON
 
 public class Goods : NSObject {
         
-        
+        var id : Int = 0
     var goodsId : String = ""
     var goodsName : NSString = ""
     var goodsSubtitle : String = ""
@@ -29,7 +29,8 @@ public class Goods : NSObject {
     }
     
     public override var primaryKey: String? {
-        return "goodsId"
+        return "id"
+//        return "goodsId"
     }
     
     override public func wr_willConvertToModel(from json: [String : Any]) {

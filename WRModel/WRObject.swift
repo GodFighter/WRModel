@@ -16,6 +16,12 @@ import KakaJSON
         return WRObjectExtension(self)
     }
     
+    @objc open var isExist : Bool {
+        get {
+            return self.db.isExist
+        }
+    }
+    
     @objc open var table : String {
         get {
             return self.db.table
@@ -104,6 +110,26 @@ import KakaJSON
         return []
     }
     
+    @objc override open var isExist : Bool {
+        get {
+            guard let primaryKey = self.value.primaryKey else {
+                return false
+            }
+            if self.primaryKeyProperty == nil {
+                self.primaryKeyProperty = self.propertyWithName(primaryKey)
+            }
+            
+            guard let property = self.primaryKeyProperty else {
+                return false
+            }
+            guard let value = self.valueForProperty(property) else {
+                return false
+            }
+
+            return self.select(value) != nil
+        }
+    }
+
     fileprivate var primaryKeyProperty : Property?
 
     //MARK: func
@@ -156,11 +182,21 @@ import KakaJSON
         }
         return nil
     }
+    
+    fileprivate func valueStringForColumn(_ column : String, value : Any) -> String? {
+        guard let property = self.propertyWithName(column) else {
+            return nil
+        }
+        let type = WRDatabase.type("\(property.type)")
+
+        return type == DatabaseDataType.text ? "'\(value)'" : "\(value)"
+    }
 }
 
 //MARK:-
 fileprivate typealias WRObjectExtension_DB = WRObjectExtension
 extension WRObjectExtension_DB {
+    //MARK: Select
 
     /**查找指定表中所有数据*/
     /// - parameter exchange: 交换数据 block
@@ -190,15 +226,27 @@ extension WRObjectExtension_DB {
         }
         suceess?(nil)
         return infos
-}
+    }
     
+    @objc open func select_table() -> [[String : Any]] {
+        return self.select_table(nil, suceess: nil);
+    }
+    
+    
+//    @objc open func select(_ columns : [String], values : [Any], exchange: (([[String : Any]])->([[String : Any]]))?, suceess: ((Error?) -> ())?) -> [[String:Any]] {
+//        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+//            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
+//            return []
+//        }
+//
+//    }
     /**查找指定列的数据*/
     /// - parameter column: 列名
     /// - parameter value: 值
     /// - parameter exchange: 交换数据 block
     /// - parameter suceess: 是否成功 block
     /// - returns: 表数据的字典数组
-    @objc open func select(_ column : String, value : String, exchange: (([[String : Any]])->([[String : Any]]))?, suceess: ((Error?) -> ())?) -> [[String:Any]] {
+    @objc open func select(_ columns : [String], values : [Any], exchange: (([[String : Any]])->([[String : Any]]))?, suceess: ((Error?) -> ())?) -> [[String:Any]] {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return []
@@ -206,7 +254,22 @@ extension WRObjectExtension_DB {
         
         var infos : [[String:Any]] = []
         
-        if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table) where \(column) = '\(value)'", withArgumentsIn: []){
+        var selectedString = ""
+        for i in 0..<columns.count {
+            let dbColumnName = columns[i]
+            guard self.propertyWithName(dbColumnName) != nil else {
+                suceess?(NSError(domain: "无此纵队", code: -5, userInfo: nil))
+                return []
+            }
+            let value = values[i]
+            let primaryValueString = self.valueStringForColumn(dbColumnName, value: value)!
+            
+            selectedString += (dbColumnName + " = " + primaryValueString + (i != columns.count - 1 ? " and " : ""))
+        }
+                
+        let sql = "select * from \(self.value.table) where \(selectedString)"
+
+        if let results = WRDatabase.shared.executeQuery(sql, withArgumentsIn: []){
             
             while results.next(){
              if let info = results.resultDictionary as? [String : Any]{
@@ -223,7 +286,61 @@ extension WRObjectExtension_DB {
         suceess?(nil)
         return infos
     }
+    @objc open func select(_ columns : [String], values : [Any]) -> [[String:Any]] {
+        return self.select(columns, values: values, exchange: nil, suceess: nil)
+    }
 
+    /**根据主键查找对象*/
+    /**
+    主键必须有，且需要不为空的主键值
+    */
+    /// - parameter suceess: 是否成功 block
+    /// - returns: 表数据的字典
+    @objc open func select(_ primaryValue : Any, suceess: ((Error?) -> ())?) -> [String:Any]? {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
+            return nil
+        }
+        
+        guard let primaryKey = self.value.primaryKey else {
+            // 无主键
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
+            return nil
+        }
+        
+        if self.primaryKeyProperty == nil {
+            self.primaryKeyProperty = self.propertyWithName(primaryKey)
+        }
+        
+        guard let _ = self.primaryKeyProperty else {
+            // 无主键属性
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
+            return nil
+        }
+
+        let primaryValueString = self.valueStringForColumn(primaryKey, value: primaryValue)!
+        
+        var userInfo : [String:Any]? = nil
+                
+        let sql = "select * from \(self.value.table) where \(primaryKey) = \(primaryValueString)"
+        
+        if let results = WRDatabase.shared.executeQuery(sql, withArgumentsIn: []){
+            
+            results.next()
+            if let info = results.resultDictionary as? [String : Any]{
+                userInfo = info
+            }
+            results.close()
+        }
+        
+        WRDatabase.shared.close()
+        return userInfo
+    }
+    @objc open func select(_ primaryValue : Any) -> [String:Any]? {
+        return self.select(primaryValue, suceess: nil)
+    }
+
+    //MARK: - Save
     /**保存数据*/
     /**
     无主键暂不可保存
@@ -292,7 +409,52 @@ extension WRObjectExtension_DB {
         WRDatabase.shared.close()
         suceess?(nil)
     }
+    
+    @objc open func save() {
+        self.save(nil)
+    }
 
+    //MARK: - Delete
+    /**删除对象所存表单*/
+    /// - parameter suceess: 是否成功 block
+    @objc open func deleteAll(_ suceess: ((Error?) -> ())?) {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
+            return
+        }
+        WRDatabase.shared.executeUpdate("delete from \(self.value.table)", withArgumentsIn: [])
+        WRDatabase.shared.close()
+        suceess?(nil)
+    }
+    @objc open func deleteAll() {
+        self.deleteAll(nil)
+    }
+
+    @objc open func delete(_ columns: [String], values: [Any], suceess: ((Error?) -> ())?) {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
+            return
+        }
+        
+        var selectedString = ""
+        for i in 0..<columns.count {
+            let dbColumnName = columns[i]
+            guard self.propertyWithName(dbColumnName) != nil else {
+                suceess?(NSError(domain: "无此纵队", code: -5, userInfo: nil))
+                return
+            }
+            let value = values[i]
+            let primaryValueString = self.valueStringForColumn(dbColumnName, value: value)!
+            
+            selectedString += (dbColumnName + " = " + primaryValueString + (i != columns.count - 1 ? " and " : ""))
+        }
+
+        WRDatabase.shared.executeUpdate("delete from \(self.value.table) where \(selectedString)", withArgumentsIn: [])
+        suceess?(nil)
+    }
+    @objc open func delete(_ columns: [String], values: [Any]) {
+        self.delete(columns, values: values, suceess: nil)
+    }
     /**删除单条数据*/
     /**
     无主键暂不可删除
@@ -331,19 +493,115 @@ extension WRObjectExtension_DB {
         WRDatabase.shared.close()
         suceess?(nil)
     }
+    @objc open func delete() {
+        self.delete(nil)
+    }
 
-    /**删除对象所存表单*/
+    //MARK: - Update
+    /**更新表单指定列*/
+    /// - parameter columns: 列名
+    /// - parameter values: 列数据
+    /// - parameter replaceValues: 替换数据
     /// - parameter suceess: 是否成功 block
-    @objc open func deleteAll(_ suceess: ((Error?) -> ())?) {
+    @objc open func update(_ columns : [String], values: [Any], replaceValues: [Any], suceess: ((Error?) -> ())?) {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return
         }
-        WRDatabase.shared.executeUpdate("delete from \(self.value.table)", withArgumentsIn: [])
+        
+        var dbColumns = ""
+        var replaceColumns = ""
+        
+        for i in 0..<columns.count {
+            let dbColumnName = columns[i]
+            let replaceValue = replaceValues[i]
+            let dbValue = values[i]
+            
+            dbColumns += (dbColumnName + " = " + "'\(dbValue)'" + (i != columns.count - 1 ? " and " : ""))
+            replaceColumns += (dbColumnName + " = " + "'\(replaceValue)'" + (i != columns.count - 1 ? " , " : ""))
+        }
+            
+        let sql = "update \(self.value.table) set \(replaceColumns) where \(dbColumns)"
+        if let results = WRDatabase.shared.executeQuery(sql, withArgumentsIn: []) {
+            while results.next(){
+            }
+            results.close()
+        }
         WRDatabase.shared.close()
         suceess?(nil)
     }
-    
+    @objc open func update(_ columns : [String], values: [Any], replaceValues: [Any]) {
+        self.update(columns, values: values, replaceValues: replaceValues, suceess: nil)
+    }
+
+    /**更新单条数据指定定列*/
+    /**
+    无主键暂不可更新
+    */
+    /// - parameter columns: 列名
+    /// - parameter values: 替换值
+    /// - parameter suceess: 是否成功 block
+    @objc open func update(_ columns : [String], values: [Any], suceess: ((Error?) -> ())?) {
+        
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
+            return
+        }
+        
+        guard let primaryKey = self.value.primaryKey else {
+            // 无主键
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
+            return
+        }
+        
+        if self.primaryKeyProperty == nil {
+            self.primaryKeyProperty = self.propertyWithName(primaryKey)
+        }
+        
+        guard let property = self.primaryKeyProperty else {
+            // 无主键属性
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
+            return
+        }
+        guard let value = self.valueForProperty(property) else {
+            // 无主键值
+            suceess?(NSError(domain: "无主键的值", code: -3, userInfo: nil))
+            return
+        }
+        
+        var succeed : Bool = false
+
+        var replaceColumns = ""
+        for i in 0..<columns.count {
+            let dbColumnName = columns[i]
+            let replaceValue = values[i]
+            
+            replaceColumns += (dbColumnName + " = " + "'\(replaceValue)'" + (i != columns.count - 1 ? " , " : ""))
+        }
+        
+        let primaryValueString = self.valueStringForColumn(primaryKey, value: value)!
+        
+        let sql = "update \(self.value.table) set \(replaceColumns) where \(primaryKey) = \(primaryValueString)"
+        let selectSql = "select * from \(self.value.table) where \(primaryKey) = \(primaryValueString)"
+
+        if let results = WRDatabase.shared.executeQuery(selectSql, withArgumentsIn: []) {
+            results.next()
+            if let _ = results.resultDictionary as? [String : Any]{
+                succeed = true
+            }
+            results.close()
+        }
+
+        if succeed{
+            succeed = WRDatabase.shared.executeUpdate(sql, withArgumentsIn: values)
+        }
+        WRDatabase.shared.close()
+        suceess?(succeed ? nil : NSError(domain: "未找到该主键的对象", code: -4, userInfo: nil))
+    }
+    @objc open func update(_ columns : [String], values: [Any]) {
+        self.update(columns, values: values, suceess: nil)
+    }
+
     /**更新单条数据所有数据*/
     /**
     无主键暂不可更新
@@ -400,8 +658,10 @@ extension WRObjectExtension_DB {
             $0.1
         })
 
-        let sql = "update \(self.value.table) set \(keys) where \(primaryKey) = '\(value)'"
-        if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table) where \(primaryKey) = '\(value)'", withArgumentsIn: []) {
+        let primaryValueString = self.valueStringForColumn(primaryKey, value: value)!
+
+        let sql = "update \(self.value.table) set \(keys) where \(primaryKey) = \(primaryValueString)"
+        if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table) where \(primaryKey) = \(primaryValueString)", withArgumentsIn: []) {
             results.next()
             if let _ = results.resultDictionary as? [String : Any]{
                 succeed = true
@@ -415,107 +675,8 @@ extension WRObjectExtension_DB {
         WRDatabase.shared.close()
         suceess?(nil)
     }
-    
-    /**更新表单指定列*/
-    /// - parameter columns: 列名
-    /// - parameter values: 列数据
-    /// - parameter replaceValues: 替换数据
-    /// - parameter suceess: 是否成功 block
-    @objc open func updateTable(_ columns : [String], values: [Any], replaceValues: [Any], suceess: ((Error?) -> ())?) {
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
-            return
-        }
-        
-        var dbColumns = ""
-        var replaceColumns = ""
-        
-        for i in 0..<columns.count {
-            let dbColumnName = columns[i]
-            let replaceValue = replaceValues[i]
-            let dbValue = values[i]
-            
-            dbColumns += (dbColumnName + " = " + "'\(dbValue)'" + (i != columns.count - 1 ? " and " : ""))
-            replaceColumns += (dbColumnName + " = " + "'\(replaceValue)'" + (i != columns.count - 1 ? " , " : ""))
-        }
-            
-        let sql = "update \(self.value.table) set \(replaceColumns) where \(dbColumns)"
-        if let results = WRDatabase.shared.executeQuery(sql, withArgumentsIn: []) {
-            while results.next(){
-            }
-            results.close()
-        }
-        WRDatabase.shared.close()
-        suceess?(nil)
-    }
-
-    /// 更新单条数据指定定列
-    ///
-    /**
-     无主键暂不可更新
-     */
-    /// - Parameter columns: 列名
-    /// - Parameter values: 替换值
-    /**更新单条数据指定定列*/
-    /**
-    无主键暂不可更新
-    */
-    /// - parameter columns: 列名
-    /// - parameter values: 替换值
-    /// - parameter columns: 列名
-    /// - parameter suceess: 是否成功 block
-    @objc open func update(_ columns : [String], values: [Any], suceess: ((Error?) -> ())?) {
-        
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
-            return
-        }
-        
-        guard let primaryKey = self.value.primaryKey else {
-            // 无主键
-            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
-            return
-        }
-        
-        if self.primaryKeyProperty == nil {
-            self.primaryKeyProperty = self.propertyWithName(primaryKey)
-        }
-        
-        guard let property = self.primaryKeyProperty else {
-            // 无主键属性
-            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
-            return
-        }
-        guard let value = self.valueForProperty(property) else {
-            // 无主键值
-            suceess?(NSError(domain: "无主键的值", code: -3, userInfo: nil))
-            return
-        }
-        
-        var succeed : Bool = false
-
-        var replaceColumns = ""
-        for i in 0..<columns.count {
-            let dbColumnName = columns[i]
-            let replaceValue = values[i]
-            
-            replaceColumns += (dbColumnName + " = " + "'\(replaceValue)'" + (i != columns.count - 1 ? " , " : ""))
-        }
-
-        let sql = "update \(self.value.table) set \(replaceColumns) where \(primaryKey) = '\(value)'"
-        if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table) where \(primaryKey) = '\(value)'", withArgumentsIn: []) {
-            results.next()
-            if let _ = results.resultDictionary as? [String : Any]{
-                succeed = true
-            }
-            results.close()
-        }
-
-        if succeed{
-            succeed = WRDatabase.shared.executeUpdate(sql, withArgumentsIn: values)
-        }
-        WRDatabase.shared.close()
-        suceess?(succeed ? nil : NSError(domain: "未找到该主键的对象", code: -4, userInfo: nil))
+    @objc open func update() {
+        self.update(nil)
     }
 
 }

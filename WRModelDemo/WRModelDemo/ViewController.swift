@@ -31,15 +31,23 @@ class ViewController: UIViewController {
             print("error")
         }
         
-        let infos = Goods().db.select_table(nil, suceess: nil)
+//        let infos = Goods().db.select_table(nil, suceess: nil)
                 
-//        let goods = Goods.create(json: dataJson)
-//        goods.storeId = 50
-//        goods.goodsSubtitle = ""
-//        goods.db.save(nil)
-//        goods.db.update(["storeId"], values: [76543])
-//
-        print("\(infos)")
+        let goods = Goods.create(json: dataJson)
+        goods.goodsName = "oaoijsdisjdi"
+        goods.db.delete(["goodsName", "storeId"], values: ["蒙古民族的生态文化", 60])
+//        let info = goods.db.select("goodsId", value: "e719a33329644fd08e83a7500fbddbe9", exchange: nil, suceess: nil)
+//        goods.storeId = 30.0
+//        goods.db.save()
+//        goods.db.update(["goodsId"], values: [5647])
+//        goods.db.select("goodsName", value: "蒙古民族的生态文化")
+//        goods.db.save()
+////        goods.storeId = 50
+////        goods.goodsSubtitle = ""
+////        goods.db.save(nil)
+////        goods.db.update(["storeId"], values: [76543])
+////
+//        print("\(info)")
 
     }
 
