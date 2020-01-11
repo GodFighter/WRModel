@@ -161,9 +161,14 @@ import KakaJSON
 //MARK:-
 fileprivate typealias WRObjectExtension_DB = WRObjectExtension
 extension WRObjectExtension_DB {
-    /// 查找指定表中所有数据
-    @objc open func select_table() -> [[String : Any]] {
+
+    /**查找指定表中所有数据*/
+    /// - parameter exchange: 交换数据 block
+    /// - parameter suceess: 是否成功 block
+    /// - returns: 表数据的字典数组
+    @objc open func select_table(_ exchange: (([[String : Any]])->([[String : Any]]))?, suceess: ((Error?) -> ())?) -> [[String : Any]] {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return []
         }
         
@@ -180,12 +185,22 @@ extension WRObjectExtension_DB {
         }
         
         WRDatabase.shared.close()
+        if exchange != nil {
+            infos = exchange!(infos) 
+        }
+        suceess?(nil)
         return infos
-    }
+}
     
-    /// 查找指定列的数据
-    @objc open func select(_ column : String, value : String) -> [[String:Any]] {
+    /**查找指定列的数据*/
+    /// - parameter column: 列名
+    /// - parameter value: 值
+    /// - parameter exchange: 交换数据 block
+    /// - parameter suceess: 是否成功 block
+    /// - returns: 表数据的字典数组
+    @objc open func select(_ column : String, value : String, exchange: (([[String : Any]])->([[String : Any]]))?, suceess: ((Error?) -> ())?) -> [[String:Any]] {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return []
         }
         
@@ -202,15 +217,19 @@ extension WRObjectExtension_DB {
         }
         
         WRDatabase.shared.close()
+        if exchange != nil {
+            infos = exchange!(infos)
+        }
+        suceess?(nil)
         return infos
     }
 
-    ///保存数据
+    /**保存数据*/
     /**
- 
     无主键暂不可保存
     */
-    @objc open func save() {
+    /// - parameter suceess: 是否成功 block
+    @objc open func save(_ suceess: ((Error?) -> ())?) {
         if WRDatabase.shared.open(), !WRDatabase.shared.tableExists("\(self.value.table)") {
             WRDatabase.shared.executeUpdate(self.createTableSql, withArgumentsIn: [])
             WRDatabase.shared.close()
@@ -218,11 +237,13 @@ extension WRObjectExtension_DB {
         
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             // 数据库打开失败
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return
         }
 
         guard let primaryKey = self.value.primaryKey else {
             // 无主键
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
             return
         }
         
@@ -232,10 +253,12 @@ extension WRObjectExtension_DB {
         
         guard let property = self.primaryKeyProperty else {
             // 无主键属性
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
             return
         }
         guard let value = self.valueForProperty(property) else {
             // 无主键值
+            suceess?(NSError(domain: "无主键的值", code: -3, userInfo: nil))
             return
         }
         
@@ -267,17 +290,24 @@ extension WRObjectExtension_DB {
         WRDatabase.shared.executeUpdate(insertSql, withArgumentsIn: info.map({ $0.1 }))
 
         WRDatabase.shared.close()
+        suceess?(nil)
     }
 
-    /// 删除单条数据
-    @objc open func delete() {
+    /**删除单条数据*/
+    /**
+    无主键暂不可删除
+    */
+    /// - parameter suceess: 是否成功 block
+    @objc open func delete(_ suceess: ((Error?) -> ())?) {
         
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return
         }
         
         guard let primaryKey = self.value.primaryKey else {
             // 无主键
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
             return
         }
         
@@ -287,39 +317,48 @@ extension WRObjectExtension_DB {
         
         guard let property = self.primaryKeyProperty else {
             // 无主键属性
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
             return
         }
         guard let value = self.valueForProperty(property) else {
             // 无主键值
+            suceess?(NSError(domain: "无主键的值", code: -3, userInfo: nil))
             return
         }
         
         WRDatabase.shared.executeUpdate("delete from \(self.value.table) where \(primaryKey) = '\(value)'", withArgumentsIn: [])
         
         WRDatabase.shared.close()
+        suceess?(nil)
     }
 
-    /// 删除对象所存表单
-    @objc open func deleteAll() {
+    /**删除对象所存表单*/
+    /// - parameter suceess: 是否成功 block
+    @objc open func deleteAll(_ suceess: ((Error?) -> ())?) {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return
         }
         WRDatabase.shared.executeUpdate("delete from \(self.value.table)", withArgumentsIn: [])
         WRDatabase.shared.close()
+        suceess?(nil)
     }
     
-    /// 更新单条数据所有数据
-       /**
-     无主键暂不可更新
-       */
-    @objc open func update() {
+    /**更新单条数据所有数据*/
+    /**
+    无主键暂不可更新
+    */
+    /// - parameter suceess: 是否成功 block
+    @objc open func update(_ suceess: ((Error?) -> ())?) {
         
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return
         }
         
         guard let primaryKey = self.value.primaryKey else {
             // 无主键
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
             return
         }
         
@@ -329,10 +368,12 @@ extension WRObjectExtension_DB {
         
         guard let property = self.primaryKeyProperty else {
             // 无主键属性
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
             return
         }
         guard let value = self.valueForProperty(property) else {
             // 无主键值
+            suceess?(NSError(domain: "无主键的值", code: -3, userInfo: nil))
             return
         }
         
@@ -372,14 +413,17 @@ extension WRObjectExtension_DB {
             succeed = WRDatabase.shared.executeUpdate(sql, withArgumentsIn: values)
         }
         WRDatabase.shared.close()
+        suceess?(nil)
     }
     
-    /// 更新表单指定列
-    /// - Parameter columns: 列名
-    /// - Parameter values: 列数据
-    /// - Parameter replaceValues: 替换数据
-    @objc open func updateTable(_ columns : [String], values: [Any], replaceValues: [Any]) {
+    /**更新表单指定列*/
+    /// - parameter columns: 列名
+    /// - parameter values: 列数据
+    /// - parameter replaceValues: 替换数据
+    /// - parameter suceess: 是否成功 block
+    @objc open func updateTable(_ columns : [String], values: [Any], replaceValues: [Any], suceess: ((Error?) -> ())?) {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return
         }
         
@@ -402,7 +446,7 @@ extension WRObjectExtension_DB {
             results.close()
         }
         WRDatabase.shared.close()
-
+        suceess?(nil)
     }
 
     /// 更新单条数据指定定列
@@ -412,14 +456,24 @@ extension WRObjectExtension_DB {
      */
     /// - Parameter columns: 列名
     /// - Parameter values: 替换值
-    @objc open func update(_ columns : [String], values: [Any]) {
+    /**更新单条数据指定定列*/
+    /**
+    无主键暂不可更新
+    */
+    /// - parameter columns: 列名
+    /// - parameter values: 替换值
+    /// - parameter columns: 列名
+    /// - parameter suceess: 是否成功 block
+    @objc open func update(_ columns : [String], values: [Any], suceess: ((Error?) -> ())?) {
         
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            suceess?(NSError(domain: "数据库打开失败", code: -1, userInfo: nil))
             return
         }
         
         guard let primaryKey = self.value.primaryKey else {
             // 无主键
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
             return
         }
         
@@ -429,10 +483,12 @@ extension WRObjectExtension_DB {
         
         guard let property = self.primaryKeyProperty else {
             // 无主键属性
+            suceess?(NSError(domain: "无主键", code: -2, userInfo: nil))
             return
         }
         guard let value = self.valueForProperty(property) else {
             // 无主键值
+            suceess?(NSError(domain: "无主键的值", code: -3, userInfo: nil))
             return
         }
         
@@ -459,7 +515,7 @@ extension WRObjectExtension_DB {
             succeed = WRDatabase.shared.executeUpdate(sql, withArgumentsIn: values)
         }
         WRDatabase.shared.close()
-
+        suceess?(succeed ? nil : NSError(domain: "未找到该主键的对象", code: -4, userInfo: nil))
     }
 
 }
