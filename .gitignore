@@ -66,3 +66,94 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+WRModelDemo/Podfile.lock
+WRModelDemo/Pods/FMDB/LICENSE.txt
+WRModelDemo/Pods/FMDB/README.markdown
+WRModelDemo/Pods/FMDB/src/fmdb/FMDatabase.h
+WRModelDemo/Pods/FMDB/src/fmdb/FMDatabase.m
+WRModelDemo/Pods/FMDB/src/fmdb/FMDatabaseAdditions.h
+WRModelDemo/Pods/FMDB/src/fmdb/FMDatabaseAdditions.m
+WRModelDemo/Pods/FMDB/src/fmdb/FMDatabasePool.h
+WRModelDemo/Pods/FMDB/src/fmdb/FMDatabasePool.m
+WRModelDemo/Pods/FMDB/src/fmdb/FMDatabaseQueue.h
+WRModelDemo/Pods/FMDB/src/fmdb/FMDatabaseQueue.m
+WRModelDemo/Pods/FMDB/src/fmdb/FMDB.h
+WRModelDemo/Pods/FMDB/src/fmdb/FMResultSet.h
+WRModelDemo/Pods/FMDB/src/fmdb/FMResultSet.m
+WRModelDemo/Pods/KakaJSON/LICENSE
+WRModelDemo/Pods/KakaJSON/README.md
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Convert/Convertible.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Convert/ConvertibleConfig.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Convert/ConvertibleEnum.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Convert/KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Convert/Logger.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Convert/TypeProxy.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Convert/Values.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Extension/Array+KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Extension/Data+KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Extension/Dictionary+KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Extension/JSONSerialization+KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Extension/NSObject+KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Extension/Optional+KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Extension/Pointer+KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Extension/String+KJ.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Global/Coding.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Global/JSON.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Global/Model.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Descriptor/ClassDescriptor.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Descriptor/Descriptor.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Descriptor/EnumDescriptor.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Descriptor/FieldDescriptor.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Descriptor/StructDescriptor.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/BaseLayout.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/ClassLayout.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/EnumLayout.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/FieldList.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/FunctionLayout.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/Layout.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/ProtocolLayout.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/StructLayout.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Layout/TupleLayout.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Metadata.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Property.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/BaseType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/ClassType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/EnumType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/ForeignClassType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/FunctionType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/Kind.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/MetaType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/ModelType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/ObjCClassType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/OptionalType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/ProtocolType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/StructType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/TupleType.swift
+WRModelDemo/Pods/KakaJSON/Sources/KakaJSON/Metadata/Type/Type.swift
+WRModelDemo/Pods/Manifest.lock
+WRModelDemo/Pods/Pods.xcodeproj/project.pbxproj
+WRModelDemo/Pods/Target Support Files/FMDB/FMDB-dummy.m
+WRModelDemo/Pods/Target Support Files/FMDB/FMDB-Info.plist
+WRModelDemo/Pods/Target Support Files/FMDB/FMDB-prefix.pch
+WRModelDemo/Pods/Target Support Files/FMDB/FMDB-umbrella.h
+WRModelDemo/Pods/Target Support Files/FMDB/FMDB.modulemap
+WRModelDemo/Pods/Target Support Files/FMDB/FMDB.xcconfig
+WRModelDemo/Pods/Target Support Files/KakaJSON/KakaJSON-dummy.m
+WRModelDemo/Pods/Target Support Files/KakaJSON/KakaJSON-Info.plist
+WRModelDemo/Pods/Target Support Files/KakaJSON/KakaJSON-prefix.pch
+WRModelDemo/Pods/Target Support Files/KakaJSON/KakaJSON-umbrella.h
+WRModelDemo/Pods/Target Support Files/KakaJSON/KakaJSON.modulemap
+WRModelDemo/Pods/Target Support Files/KakaJSON/KakaJSON.xcconfig
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-acknowledgements.markdown
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-acknowledgements.plist
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-dummy.m
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-frameworks-Debug-input-files.xcfilelist
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-frameworks-Debug-output-files.xcfilelist
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-frameworks-Release-input-files.xcfilelist
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-frameworks-Release-output-files.xcfilelist
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-frameworks.sh
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-Info.plist
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo-umbrella.h
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo.debug.xcconfig
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo.modulemap
+WRModelDemo/Pods/Target Support Files/Pods-WRModelDemo/Pods-WRModelDemo.release.xcconfig
