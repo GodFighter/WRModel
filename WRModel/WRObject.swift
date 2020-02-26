@@ -662,11 +662,14 @@ extension WRObjectExtension_DB {
 
         let sql = "update \(self.value.table) set \(keys) where \(primaryKey) = \(primaryValueString)"
         if let results = WRDatabase.shared.executeQuery("select * from \(self.value.table) where \(primaryKey) = \(primaryValueString)", withArgumentsIn: []) {
-            results.next()
-            if let _ = results.resultDictionary as? [String : Any]{
-                succeed = true
+            if results.next() {
+                if let _ = results.resultDictionary as? [String : Any]{
+                    succeed = true
+                }
+                results.close()
+            } else {
+                self.save()
             }
-            results.close()
         }
 
         if succeed{
