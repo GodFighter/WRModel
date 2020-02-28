@@ -14,7 +14,8 @@ public class Goods : NSObject {
         var id : Int = 0
     var goodsId : String = ""
     var goodsName : NSString = ""
-    var goodsSubtitle : String = ""
+    var mnName : NSString = ""
+    var subtitle : String = ""
     var goodsDescription : String?
     var storeId : Double = 0
     var evaluates : [GoodsEvaluate]?
@@ -31,6 +32,10 @@ public class Goods : NSObject {
     public override var primaryKey: String? {
         return "id"
 //        return "goodsId"
+    }
+    
+    override public var exchangePropertys: [[String : String]] {
+        return [["mnName" : "goodsNameMn"]]
     }
     
     override public func wr_willConvertToModel(from json: [String : Any]) {

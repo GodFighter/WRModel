@@ -56,6 +56,18 @@ import KakaJSON
         self.perform(#selector(wr_willConvertToModel(from:)), with: json)
     }
     
+    @nonobjc public func kj_modelKey(from property: Property) -> ModelPropertyKey {
+        let exchange = self.exchangePropertys.first { (propertyInfo) -> Bool in
+            return propertyInfo.keys.contains(property.name)
+        }
+
+        guard let exchangeProperty = exchange else {
+            return property.name
+        }
+
+        return exchangeProperty[exchangeProperty.keys.first!]!
+    }
+    
     public func kj_didConvertToModel(from json: [String: Any]) {
         self.perform(#selector(wr_didConvertToModel(from:)), with: json)
     }
