@@ -1,0 +1,13 @@
+
+platform :ios, '9.0'
+use_frameworks!
+inhibit_all_warnings!
+
+target 'WRModel_Example' do
+  pod 'WRModel', :path => '../'
+
+  target 'WRModel_Tests' do
+    inherit! :search_paths
+
+  end
+end
