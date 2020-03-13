@@ -27,7 +27,7 @@ class WRDatabase: FMDatabase {
         return database
     }()
 
-    static func type(_ type : String) -> DatabaseDataType {
+    static func ColumnType(_ type : String) -> DatabaseDataType {
         if type.contains("String") || type.contains("Character") {
             return .text
         } else if type.contains("Int32") || type.contains("Int64") {
@@ -41,25 +41,9 @@ class WRDatabase: FMDatabase {
         } else {
             return .unknown
         }
-        /*
-        switch type {
-        case "String", "Optional<String>", "NSString", "Optional<NSString>":
-            return .text
-        case "Int", "Optional<Int>", "UInt", "Optional<UInt>", "UInt8", "Optional<UInt8>", "Int8", "Optional<Int8>", "UInt16", "Optional<UInt16>", "Int16", "Optional<Int16>":
-            return .int
-        case "UInt32", "Optional<UInt32>", "Int32", "Optional<Int32>", "UInt64", "Optional<UInt64>", "Int64", "Optional<Int64>":
-            return .long
-        case "Bool", "Optional<Bool>":
-            return .bool
-        case "Float", "Optional<Float>", "CGFloat", "Optional<CGFloat>", "Double", "Optional<Double>", "Swift.Float", "Swift.Double", "Optional(Swift.Float)", "Optional(Swift.Double)":
-            return .float
-        default:
-            return .unknown
-        }
- */
     }
     
-    static func typeStirng(_ type : DatabaseDataType) -> String? {
+    static func TypeStirng(_ type : DatabaseDataType) -> String? {
         switch type {
         case .text: return "text"
         case .int: return "int"
@@ -71,20 +55,8 @@ class WRDatabase: FMDatabase {
         }
     }
     
-    static func typeNullValue(_ type : DatabaseDataType) -> Any {
-        switch type {
-        case .text: return "null"
-        case .int: return 0
-        case .long: return 0
-        case .bool: return 0
-        case .float: return 0.0
-        default:
-            return ""
-        }
-    }
-
     static func ValueStringForColumn(_ property : Property, value : Any) -> String? {
-        let type = WRDatabase.type("\(property.type)")
+        let type = WRDatabase.ColumnType("\(property.type)")
             
         switch type {
         case .text:

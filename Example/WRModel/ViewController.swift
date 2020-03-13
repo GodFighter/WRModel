@@ -24,6 +24,10 @@ struct WRGoods: WRModelProtocol {
         return [["goodName" : "Goods"]]
     }
     
+    static var IgnoreDBPropertys: [String] {
+        return ["goodsCollect"]
+    }
+    
     static var Table: String {
         return "Goods"
     }
@@ -68,8 +72,8 @@ class ViewController: UIViewController {
 //        print(object?.goodName)
         
         do {
-//            let object1 = WRGoods.Model.Create(json: ["Goods" : "4444", "goodPrice" : 0, "storeName" : "storeName"])
-//            try object1.model.save()
+            let object1 = WRGoods.Model.Create(json: ["Goods" : "4444", "goodPrice" : 0, "storeName" : "storeName"])
+            try object1.model.save()
 //
 //            let object2 = WRGoods.Model.Create(json: ["Goods" : "2222", "goodPrice" : 0])
 //            try object2.model.save()
@@ -90,7 +94,7 @@ class ViewController: UIViewController {
 //            object1.storeName = nil
 //            try object1.model.update()
             
-            try WRGoods.Model.Update([("goodPrice", nil, 20), ("storeName", nil, "lei")])
+//            try WRGoods.Model.Update([("goodPrice", nil, 20), ("storeName", nil, "lei")])
             
             
         } catch let error {

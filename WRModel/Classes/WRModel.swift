@@ -8,16 +8,26 @@
 import UIKit
 import KakaJSON
 
+/**模型错误类型*/
+/**
+*/
 public enum WRModelError: Error {
+        /**打开数据库错误*/
     case openDBFailure
+        /**缺少主键*/
     case missPrimaryKey
+        /**保存失败*/
     case saveFailure
+        /**查询失败*/
     case selectFailure
+        /**删除失败*/
     case deleteFailure
+        /**更新失败*/
     case updateFailure
 }
 
 //MARK:-
+/**模型协议*/
 public protocol WRModelProtocol: Convertible {
     init()
 
@@ -35,18 +45,35 @@ extension WRModelProtocol {
         set {}
     }
     
+    /**属性交换*/
+    /**
+    key: 本地使用属性名
+    value: 被替换属性名
+    */
     public static var ExchangePropertys: [[String : String]] {
         return []
     }
     
+    /**表名*/
+    /**
+     默认使用对象名
+     */
     public static var Table: String {
         return WRStruct<Self>.Table
     }
     
+    /**主键*/
+    /**
+     默认为nil。不设置主键 调用 func update() 时直接保存对象
+     */
     public static var PrimaryKey : String? {
         return WRStruct<Self>.PrimaryKey
     }
     
+    /**数据库忽略属性*/
+    /**
+     默认为空
+     */
     public static var IgnoreDBPropertys : [String] {
         return []
     }
@@ -55,8 +82,6 @@ extension WRModelProtocol {
         get { return WRStruct.init(self) }
         set {}
     }
-    
-
 }
 
 //MARK:-
@@ -77,7 +102,7 @@ public struct WRStruct<T: WRModelProtocol> {
     
     static var PrimaryKeyProperty : Property? {
         guard let key = T.PrimaryKey else { return nil }
-        return PropertyWithName(key)
+        return Property(with: key)
     }
     
     static var IgnoreDBPropertys : [String] {
@@ -93,10 +118,10 @@ public struct WRStruct<T: WRModelProtocol> {
     }
 
     static var DBProperties : [Property] {
-        var dbProperties = [Property]()
+        var dbProperties: [Property] = []
         
         for property in AllProperties {
-            guard WRDatabase.type("\(property.type)") != .unknown else {
+            guard WRDatabase.ColumnType("\(property.type)") != .unknown else {
                 continue
             }
             if IgnoreDBPropertys.contains(property.name) {
@@ -108,7 +133,6 @@ public struct WRStruct<T: WRModelProtocol> {
                 dbProperties.append(property)
             }
         }
-
         return dbProperties
     }
 }
@@ -117,7 +141,7 @@ public struct WRStruct<T: WRModelProtocol> {
 fileprivate typealias WRStruct_Private = WRStruct
 internal extension WRStruct_Private {
 
-    static func PropertyWithName(_ name : String) -> Property? {
+    static func Property(with name: String) -> Property? {
         for property in self.AllProperties {
             if property.name == name {
                 return property
@@ -126,7 +150,7 @@ internal extension WRStruct_Private {
         return nil
     }
     
-    static func ValueForProperty(_ property : Property?, model: T) -> Any {
+    static func Value(with property : Property?, for model: T) -> Any {
         guard property != nil else {
             return ""
         }
@@ -144,6 +168,9 @@ internal extension WRStruct_Private {
 //MARK:-
 fileprivate typealias WRStruct_Public = WRStruct
 public extension WRStruct_Public {
+    /**创建模型*/
+    /// - parameter json: 模型字典
+    /// - returns: 模型对象
     static func Create(json: [String : Any]) -> T {
         let exchangePropertys = T.ExchangePropertys
         var newJson = json
@@ -155,6 +182,7 @@ public extension WRStruct_Public {
         return newJson.kj.model(type: T.self) as! T
     }
     
+    /**是否存在表*/
     static var IsExistTable: Bool {
         let isExist = WRDatabase.shared.open() && WRDatabase.shared.tableExists(T.Table)
         WRDatabase.shared.close()
@@ -286,7 +314,7 @@ public extension WRStruct_Save {
         
         let insertSql = WRStruct.Sql_insert(self.base)
         let values = WRStruct.DBProperties.map { (property) -> Any? in
-            return WRStruct.ValueForProperty(property, model: self.base)
+            return WRStruct.Value(with: property, for: self.base)
         }
         
         if !WRDatabase.shared.executeUpdate(insertSql, withArgumentsIn: values) {
@@ -299,6 +327,8 @@ public extension WRStruct_Save {
 //MARK:-
 fileprivate typealias WRStruct_Delete = WRStruct
 public extension WRStruct_Delete {
+    
+    /**删除表*/
     static func DeleteAll() throws {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             WRDatabase.shared.close()
@@ -312,6 +342,10 @@ public extension WRStruct_Delete {
         WRDatabase.shared.close()
     }
     
+    /**删除指定键值*/
+    /**
+    */
+    /// - parameter keyValues: 待删除键值对 ，属性名 ： 属性值
     static func Delete(_ keyValues: [ [String : Any?] ]) throws {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             WRDatabase.shared.close()
@@ -325,6 +359,7 @@ public extension WRStruct_Delete {
         WRDatabase.shared.close()
     }
     
+    /**对象从数据库删除*/
     func delete() throws {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             WRDatabase.shared.close()
@@ -336,13 +371,13 @@ public extension WRStruct_Delete {
             throw WRModelError.deleteFailure
         }
         WRDatabase.shared.close()
-
     }
 }
 
 //MARK:-
 fileprivate typealias WRStruct_Update = WRStruct
 public extension WRStruct_Update {
+    /**更新对象*/
     func update() throws {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             WRDatabase.shared.close()
@@ -362,7 +397,7 @@ public extension WRStruct_Update {
                 results.close()
 
                 let values = WRStruct.DBProperties.map { (property) -> Any? in
-                    return WRStruct.ValueForProperty(property, model: self.base)
+                    return WRStruct.Value(with: property, for: self.base)
                 }
                 guard WRDatabase.shared.executeUpdate(updateSql, withArgumentsIn: values) else {
                     results.close()
@@ -376,6 +411,13 @@ public extension WRStruct_Update {
         WRDatabase.shared.close()
     }
     
+    /**更新数据库指定数据*/
+    /**
+    column 属性名
+    originalValue 原始值
+    replaceValue 替换值
+    */
+    /// - parameter modifyInfos: 修改信息
     static func Update(_ modifyInfos: [(column: String, originalValue: Any?, replaceValue: Any?)]) throws {
         guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
             WRDatabase.shared.close()
@@ -403,13 +445,12 @@ fileprivate extension WRStruct_SQL {
 
             if let column = dictionary.first?.key {
                 let value = dictionary.first?.value
-                let property = PropertyWithName(column)
                 
                 if value == nil {
                     selectedString += column + (isSet ? " = null" : " is null ")
                     selectedString += relation
                 } else {
-                    if let valueString = WRDatabase.ValueStringForColumn(property!, value: value!) {
+                    if let property = Property(with: column), let valueString = WRDatabase.ValueStringForColumn(property, value: value!) {
                         selectedString += column + " = " + valueString
                         selectedString += relation
                     }
@@ -424,13 +465,13 @@ fileprivate extension WRStruct_SQL {
         var selectedString = ""
         
         if let primary = T.PrimaryKey {
-            let value = ValueForProperty(PropertyWithName(primary), model: model)
+            let value = Value(with: Property(with: primary), for: model)
             let valueString = WRDatabase.ValueStringForColumn(PrimaryKeyProperty!, value: value)
             selectedString = primary + " = " + valueString!
         } else {
             for (index, property) in DBProperties.enumerated()
             {
-                let value = ValueForProperty(property, model: model)
+                let value = Value(with: property, for: model)
                 if let valueString = WRDatabase.ValueStringForColumn(property, value: value) {
                     selectedString += property.name + " = " + valueString
                 } else {
@@ -444,7 +485,7 @@ fileprivate extension WRStruct_SQL {
     
     static var Sql_createTable : String {
         func columnSql(_ property : Property) -> String {
-            let typeName = WRDatabase.typeStirng(WRDatabase.type("\(property.type)")) ?? ""
+            let typeName = WRDatabase.TypeStirng(WRDatabase.ColumnType("\(property.type)")) ?? ""
             
             var name = property.name
 
@@ -515,7 +556,7 @@ fileprivate extension WRStruct_SQL {
         guard let primaryKey = T.PrimaryKey else {
             return ""
         }
-        guard let primaryValueString = WRDatabase.ValueStringForColumn(PrimaryKeyProperty!, value: ValueForProperty(PrimaryKeyProperty!, model: model)) else {
+        guard let primaryValueString = WRDatabase.ValueStringForColumn(PrimaryKeyProperty!, value: Value(with: PrimaryKeyProperty!, for: model)) else {
             return ""
         }
 
