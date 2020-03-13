@@ -13,6 +13,7 @@
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
+		BB36AC1D241B6698004E006D /* response_1572919417658.json in Resources */ = {isa = PBXBuildFile; fileRef = BB36AC1C241B6698004E006D /* response_1572919417658.json */; };
 		BDE60F8D31AAE239B5C01D37 /* Pods_WRModel_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 740A55B169925BC6895BBEAA /* Pods_WRModel_Example.framework */; };
 		F5821C776D343E489763F8B9 /* Pods_WRModel_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B37DA87D284BA02582FB800 /* Pods_WRModel_Tests.framework */; };
 /* End PBXBuildFile section */
@@ -46,6 +47,7 @@
 		740A55B169925BC6895BBEAA /* Pods_WRModel_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WRModel_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A285BF3C25642292568B9048 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		AA56DBDFFE23A969C3554F3F /* Pods-WRModel_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WRModel_Tests.debug.xcconfig"; path = "Target Support Files/Pods-WRModel_Tests/Pods-WRModel_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		BB36AC1C241B6698004E006D /* response_1572919417658.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = response_1572919417658.json; sourceTree = "<group>"; };
 		CAD1F4A9071746A32F33FBEA /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -107,6 +109,7 @@
 				607FACD91AFB9204008FA782 /* Main.storyboard */,
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
+				BB36AC1C241B6698004E006D /* response_1572919417658.json */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
 			);
 			name = "Example for WRModel";
@@ -247,6 +250,7 @@
 			files = (
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
+				BB36AC1D241B6698004E006D /* response_1572919417658.json in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

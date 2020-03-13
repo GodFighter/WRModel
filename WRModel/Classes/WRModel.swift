@@ -82,10 +82,17 @@ extension WRModelProtocol {
         get { return WRStruct.init(self) }
         set {}
     }
+    
+    public func kj_modelKey(from property: Property) -> ModelPropertyKey {
+        return WRStruct<Self>.ExchangePropertys.filter { (exchange) -> Bool in
+            return exchange.first?.key == property.name
+        }.first?.values.first ?? property.name
+    }
 }
 
 //MARK:-
 //MARK:-
+
 public struct WRStruct<T: WRModelProtocol> {
     var base: T
     init(_ base: T) {
@@ -94,6 +101,10 @@ public struct WRStruct<T: WRModelProtocol> {
     
     static var Table: String {
         return "\(T.self)"
+    }
+
+    static var ExchangePropertys: [[String : String]] {
+        return T.ExchangePropertys
     }
 
     static var PrimaryKey: String? {
@@ -164,6 +175,8 @@ internal extension WRStruct_Private {
         }
         return ""
     }
+    
+    
 }
 //MARK:-
 fileprivate typealias WRStruct_Public = WRStruct
@@ -171,15 +184,11 @@ public extension WRStruct_Public {
     /**创建模型*/
     /// - parameter json: 模型字典
     /// - returns: 模型对象
+    
+    
+
     static func Create(json: [String : Any]) -> T {
-        let exchangePropertys = T.ExchangePropertys
-        var newJson = json
-        exchangePropertys.forEach { (exchangeProperty) in
-            if newJson.keys.contains(exchangeProperty.first!.value) {
-                newJson.model_exchange(fromKey: exchangeProperty.first!.value, toKey: exchangeProperty.first!.key)
-            }
-        }
-        return newJson.kj.model(type: T.self) as! T
+        return json.kj.model(type: T.self) as! T
     }
     
     /**是否存在表*/

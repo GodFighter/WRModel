@@ -15,13 +15,39 @@ import WRModel
 //    }
 //}
 
-struct WRGoods: WRModelProtocol {
-//    required init() {
-//
-//    }
+struct WRGoodsEvaluate: WRModelProtocol {
+    var gevalId: String = ""
+    var gevalAddTime: Int64?
+    var gevalScore: Int = 0
+    var image: String?
     
     static var ExchangePropertys: [[String : String]] {
-        return [["goodName" : "Goods"]]
+        return [["image" : "specInfo"]]
+    }
+
+}
+
+struct WRGoodsMembership: WRModelProtocol {
+    var goodsId: String = ""
+    
+    static var ExchangePropertys: [[String : String]] {
+        return [["goodsId" : "activityId"]]
+    }
+
+}
+
+struct WRGoodsActivity: WRModelProtocol {
+    var memberShip: WRGoodsMembership?
+
+    static var ExchangePropertys: [[String : String]] {
+        return [["memberShip" : "shopActivityMembership"]]
+    }
+}
+
+
+struct WRGoods: WRModelProtocol {
+    static var ExchangePropertys: [[String : String]] {
+        return [["evaluates" : "evaluateGoodsList"] , ["activities" : "shopActivityList"]]
     }
     
     static var IgnoreDBPropertys: [String] {
@@ -33,24 +59,16 @@ struct WRGoods: WRModelProtocol {
     }
     
     static var PrimaryKey: String? {
-        return "goodName"
+        return "goodsId"
     }
-
     
-    var goodName: String = ""
-    var goodPrice: CGFloat = 0
-    var storeName: String?
-    var goodsLevel: Float? = 0
-    var goodsCollect: Bool?
+    var goodsId: String = ""
+    var goodsName: String = ""
+    var goodsNameMn: String?
+    var goodsStorePrice: CGFloat = 0
 
-    var stringText: String?
-    var nsstringText: NSString? = "1"
-    var char: Character? = "2"
-    
-    var goodsCount: Int?
-    var intText: NSInteger? = 4
-    var int16Text: Int16? = 5
-
+    var evaluates: [WRGoodsEvaluate]?
+    var activities: [WRGoodsActivity]?
     
 }
 
@@ -72,8 +90,31 @@ class ViewController: UIViewController {
 //        print(object?.goodName)
         
         do {
-            let object1 = WRGoods.Model.Create(json: ["Goods" : "4444", "goodPrice" : 0, "storeName" : "storeName"])
-            try object1.model.save()
+            
+            guard  let url = Bundle.main.path(forResource: "response_1572919417658", ofType: "json") else {
+                print("url 没有数据")//如果没有取到，按照上面步骤验查一下。
+                return
+            }
+
+            let data = try? Data(contentsOf: URL(fileURLWithPath: url), options: Data.ReadingOptions.alwaysMapped)
+            
+            guard data != nil else {
+                return
+            }
+            
+            var dataJson : [String : Any] = [:]
+            do {
+                dataJson = try JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as! [String : Any]
+            } catch {
+                print("error")
+            }
+            
+            let object = WRGoods.Model.Create(json: dataJson)
+            
+            print(object)
+
+//            let object1 = WRGoods.Model.Create(json: ["Goods" : "4444", "goodPrice" : 0, "storeName" : "storeName"])
+//            try object1.model.save()
 //
 //            let object2 = WRGoods.Model.Create(json: ["Goods" : "2222", "goodPrice" : 0])
 //            try object2.model.save()
