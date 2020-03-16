@@ -9,7 +9,7 @@ let package = Package(
         .library(name: "WRModel", targets: ["WRModel"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ccgus/fmdb.git", from: "2.7.4"),
+        .package(url: "https://github.com/ccgus/fmdb.git", from: "2.7.5"),
         .package(url: "https://github.com/kakaopensource/KakaJSON.git", from: "1.1.2"),
     ],
     targets: [
