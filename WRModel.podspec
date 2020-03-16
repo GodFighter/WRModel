@@ -14,9 +14,9 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = '9.0'
     s.swift_version = '5.0'
 
-    ss.source_files = 'WRModel/Classes/*.swift'
+    s.source_files = 'WRModel/Classes/**/*.swift'
 
     s.dependency 'FMDB'
-    s.dependency 'KakaJSON', '1.1.1'
+    s.dependency 'KakaJSON', '1.1.2'
 
 end
