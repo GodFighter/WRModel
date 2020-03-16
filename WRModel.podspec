@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name         = 'WRModel'
-    s.version      = "1.2.2"
+    s.version      = "1.2.3"
     s.summary      = 'JSON转模型，模型保存工具类'
     s.description  = 'JSON转模型，模型转JSON，模型保存'
     s.homepage     = 'https://github.com/GodFighter/WRModel'
