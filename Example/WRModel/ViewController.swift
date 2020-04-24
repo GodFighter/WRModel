@@ -8,6 +8,7 @@
 
 import UIKit
 import WRModel
+import KakaJSON
 
 //struct WRStore: WRModelProtocol {
 //    static var Table: String {
@@ -45,6 +46,10 @@ struct WRGoodsActivity: WRModelProtocol {
 }
 
 
+enum EnumInt: Int, ConvertibleEnum {
+    case Normal
+}
+
 struct WRGoods: WRModelProtocol {
     static var ExchangePropertys: [[String : String]] {
         return [["evaluates" : "evaluateGoodsList"] , ["activities" : "shopActivityList"]]
@@ -69,6 +74,8 @@ struct WRGoods: WRModelProtocol {
 
     var evaluates: [WRGoodsEvaluate]?
     var activities: [WRGoodsActivity]?
+    
+    var enumText = EnumInt.Normal
     
 }
 
@@ -110,6 +117,8 @@ class ViewController: UIViewController {
             }
             
             let object = WRGoods.Model.Create(json: dataJson)
+            
+            try object.model.save()
             
             print(object)
 

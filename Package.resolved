@@ -1,0 +1,25 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "FMDB",
+        "repositoryURL": "https://github.com/ccgus/fmdb",
+        "state": {
+          "branch": null,
+          "revision": "9b100cc3dd83ff88a17a4da8718eab4b08e2fe67",
+          "version": null
+        }
+      },
+      {
+        "package": "KakaJSON",
+        "repositoryURL": "https://github.com/kakaopensource/KakaJSON.git",
+        "state": {
+          "branch": null,
+          "revision": "88d8587a90b8efaac9228baee3a759c25f8a6dd3",
+          "version": "1.1.2"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

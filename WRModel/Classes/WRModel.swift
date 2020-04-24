@@ -127,11 +127,17 @@ public struct WRStruct<T: WRModelProtocol> {
         }
         return mt.properties ?? []
     }
-
+    
     static var DBProperties : [Property] {
         var dbProperties: [Property] = []
         
         for property in AllProperties {
+            var propertyType = "\(property.type)"
+            
+            if let mt = Metadata.type(property.type), mt.kind == KakaJSON.Kind.enum {
+                
+            }
+//             print(Metadata.type(property.type)?.kind)
             guard WRDatabase.ColumnType("\(property.type)") != .unknown else {
                 continue
             }
@@ -184,9 +190,6 @@ public extension WRStruct_Public {
     /**创建模型*/
     /// - parameter json: 模型字典
     /// - returns: 模型对象
-    
-    
-
     static func Create(json: [String : Any]) -> T {
         return json.kj.model(type: T.self) as! T
     }
@@ -236,7 +239,7 @@ public extension WRStruct_Selected {
     */
     /// - parameter primaryKeyValue: 值
     /// - returns: 模型对象
-    static func Select(_ primaryKeyValue: String) throws -> T? {
+    static func Select(_ primaryKeyValue: Any) throws -> T? {
         guard let primaryKey = T.PrimaryKey else
         {
             throw WRModelError.selectFailure
@@ -321,6 +324,7 @@ public extension WRStruct_Save {
             guard WRDatabase.shared.executeUpdate(deleteSql, withArgumentsIn: []) else { WRDatabase.shared.close(); throw WRModelError.saveFailure }
         }
         
+        let pro = WRStruct.Property(with: "enumText")
         let insertSql = WRStruct.Sql_insert(self.base)
         let values = WRStruct.DBProperties.map { (property) -> Any? in
             return WRStruct.Value(with: property, for: self.base)
@@ -585,7 +589,7 @@ fileprivate extension WRStruct_SQL {
 
     }
 }
-//MARK:-
+
 //MARK:-
 extension Dictionary {
     mutating func model_exchange<K:Hashable>(fromKey:K, toKey:K) {

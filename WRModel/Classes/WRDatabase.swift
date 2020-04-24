@@ -16,6 +16,7 @@ enum DatabaseDataType {
     case long
     case bool
     case float
+    case `enum`
 }
 
 public var kWRDBPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/database.db"
@@ -38,6 +39,9 @@ class WRDatabase: FMDatabase {
             return .bool
         } else if type.contains("Float") || type.contains("Double") {
             return .float
+        } else if type.contains("enum") {
+            return .enum
+        }
         } else {
             return .unknown
         }
@@ -93,6 +97,10 @@ class WRDatabase: FMDatabase {
             case is UInt8:  return "\(value as! UInt8)"
             case is Int16:  return "\(value as! Int16)"
             case is UInt16: return "\(value as! UInt16)"
+            case is Int32:  return "\(value as! Int32)"
+            case is UInt32: return "\(value as! UInt32)"
+            case is Int64:  return "\(value as! Int64)"
+            case is UInt64: return "\(value as! UInt64)"
             default:        return nil
             }
         case .bool:
