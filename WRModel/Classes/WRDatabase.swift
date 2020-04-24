@@ -41,7 +41,6 @@ class WRDatabase: FMDatabase {
             return .float
         } else if type.contains("enum") {
             return .enum
-        }
         } else {
             return .unknown
         }
