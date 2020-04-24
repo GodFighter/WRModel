@@ -76,7 +76,6 @@ class WRDatabase: FMDatabase {
             case is Double:     return "\(value as! Double)"
             case is Float32:    return "\(value as! Float32)"
             case is Float64:    return "\(value as! Float64)"
-            case is Float80:    return "\(value as! Float80)"
             case is Int:        return "\(Float(value as! Int))"
             case is UInt:       return "\(Float(value as! UInt))"
             case is Int8:       return "\(Float(value as! Int8))"
