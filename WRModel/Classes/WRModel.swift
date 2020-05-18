@@ -132,7 +132,7 @@ public struct WRStruct<T: WRModelProtocol> {
         var dbProperties: [Property] = []
         
         for property in AllProperties {
-            var propertyType = "\(property.type)"
+//            var propertyType = "\(property.type)"
             
             if let mt = Metadata.type(property.type), mt.kind == KakaJSON.Kind.enum {
                 
@@ -349,10 +349,9 @@ public extension WRStruct_Save {
     /**保存对象*/
     /**
     */
-    public func save() throws {
+    func save() throws {
         guard WRDatabase.shared.open() else {
             throw WRModelError.openDBFailure
-            return
         }
         if !WRDatabase.shared.tableExists("\(T.Table)") {
             WRDatabase.shared.executeUpdate(WRStruct.Sql_createTable, withArgumentsIn: [])
@@ -362,13 +361,13 @@ public extension WRStruct_Save {
         guard WRDatabase.shared.goodConnection || WRDatabase.shared.open() else { WRDatabase.shared.close(); throw WRModelError.openDBFailure }
         
         let selectSql = WRStruct.Sql_selected(self.base)
-        if let selectResult = WRDatabase.shared.executeQuery(selectSql, withArgumentsIn: [])
+        if let _ = WRDatabase.shared.executeQuery(selectSql, withArgumentsIn: [])
         {
             let deleteSql = WRStruct.Sql_delete(self.base)
             guard WRDatabase.shared.executeUpdate(deleteSql, withArgumentsIn: []) else { WRDatabase.shared.close(); throw WRModelError.saveFailure }
         }
         
-        let pro = WRStruct.Property(with: "enumText")
+//        let pro = WRStruct.Property(with: "enumText")
         let insertSql = WRStruct.Sql_insert(self.base)
         let values = WRStruct.DBProperties.map { (property) -> Any? in
             return WRStruct.Value(with: property, for: self.base)
@@ -544,7 +543,7 @@ fileprivate extension WRStruct_SQL {
         func columnSql(_ property : Property) -> String {
             let typeName = WRDatabase.TypeStirng(WRDatabase.ColumnType("\(property.type)")) ?? ""
             
-            var name = property.name
+            let name = property.name
 
             if name == T.PrimaryKey {
                 return name + " " + typeName + " primary key"
