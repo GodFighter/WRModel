@@ -452,7 +452,7 @@ public extension WRStruct_Update {
             if results.next() {
                 results.close()
 
-                let values = WRStruct.DBProperties.map { (property) -> Any? in
+                let values = WRStruct.DBProperties.map { (property) -> Any in
                     return WRStruct.Value(with: property, for: self.base)
                 }
                 guard WRDatabase.shared.executeUpdate(updateSql, withArgumentsIn: values) else {
