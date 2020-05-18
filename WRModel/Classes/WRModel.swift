@@ -369,7 +369,7 @@ public extension WRStruct_Save {
         
 //        let pro = WRStruct.Property(with: "enumText")
         let insertSql = WRStruct.Sql_insert(self.base)
-        let values = WRStruct.DBProperties.map { (property) -> Any? in
+        let values = WRStruct.DBProperties.map { (property) -> Any in
             return WRStruct.Value(with: property, for: self.base)
         }
         
@@ -441,7 +441,7 @@ public extension WRStruct_Update {
         }
         
         // 无主键直接保存
-        guard let primaryKey = T.PrimaryKey else {
+        guard let _ = T.PrimaryKey else {
             try save()
             return
         }
