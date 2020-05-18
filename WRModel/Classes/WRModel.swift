@@ -251,6 +251,49 @@ public extension WRStruct_Selected {
     /**
     查找满足条件的模型对象
     */
+    /// - parameter keys: 属性名数组
+    /// - parameter descs: 排序方式数组
+    /// - parameter count: 每页个数
+    /// - parameter pageNumber: 当前页码
+    /// - returns: 模型对象
+    static func Select(_ keys: [String], _ descs: [Bool] = [false], _ count: Int = 10, _ pageNumber: Int = 0) throws -> [T]? {
+        guard IsExistTable else { return nil}
+
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
+            WRDatabase.shared.close()
+            throw WRModelError.openDBFailure
+        }
+
+        var models: [T]? = []
+        var keysString = ""
+        for (index, key) in keys.enumerated() {
+            let desc = descs.count > index ? descs[index] : (descs.first ?? false)
+            let descString = desc ? "desc" : "asc"
+            keysString += key + " " + descString + (index >= keys.count - 1 ? "" : ", ")
+        }
+        let selectSql = "select * from \(T.Table) order by \(keysString) limit \(count) offset \(pageNumber * count)"
+
+        if let result = WRDatabase.shared.executeQuery(selectSql, withArgumentsIn: []) {
+            while result.next() {
+                if let info = result.resultDictionary as? [String : Any] {
+                    models?.append(Create(json: info))
+                } else {
+                    result.close()
+                    WRDatabase.shared.close()
+                    throw WRModelError.selectFailure
+                }
+            }
+            result.close()
+        }
+        WRDatabase.shared.close()
+
+        return models
+    }
+        
+    /**条件查找对象*/
+    /**
+    查找满足条件的模型对象
+    */
     /// - parameter keyValues: 键值对数组
     /// - returns: 模型对象
     static func Select(_ keyValues: [[String : Any]]) throws -> T? {
@@ -267,6 +310,7 @@ public extension WRStruct_Selected {
     static func Select(_ keyValues:[ [String : Any?] ]) throws -> [T]? {
         return try Selected(false, keyValues: keyValues)
     }
+        
     private static func Selected(_ isSingle: Bool, keyValues:[ [String : Any?] ]) throws -> [T]? {
         guard IsExistTable else { return nil}
     
@@ -536,7 +580,7 @@ fileprivate extension WRStruct_SQL {
         let selectedString = Sql_match(model)
         return "select * from \(T.Table) where \(selectedString)"
     }
-    
+        
     static func Sql_delete(_ isAll: Bool, _ keyValues: [ [String : Any?] ]? = nil) -> String {
         if isAll {
             return "delete from \(T.Table)"
