@@ -463,6 +463,8 @@ public extension WRStruct_Update {
             } else {
                 try save()
             }
+        } else {
+            try save()
         }
         WRDatabase.shared.close()
     }
