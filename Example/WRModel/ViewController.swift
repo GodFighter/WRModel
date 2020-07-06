@@ -120,7 +120,7 @@ class ViewController: UIViewController {
     }
     
     func select() {
-        let goods = try? WRGoods.Model.Select(["goodsStorePrice"], [false], 1, 0)
+        let goods = try? WRGoods.Model.Select(sortInfos: ["goodsStorePrice"], descs: [false], pageCount: 1, pageNumber: 0)
         
         print(goods)
     }
