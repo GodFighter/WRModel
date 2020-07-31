@@ -188,15 +188,15 @@ public extension WRStruct_Public {
     /// - returns: 模型对象
     static func Create(json: [String : Any?],
                        _ willConvert: (([String : Any?]) -> ([String : Any?]))? = nil,
-                       _ didConvert: (([String : Any?]) -> Void)? = nil) -> T {
+                       _ didConvert: ((T) -> T)? = nil) -> T {
 
         var json = json
         json = willConvert?(json) ?? json
-        let model = json.kj.model(type: T.self) as! T
-        didConvert?(json)
+        var model = json.kj.model(type: T.self) as! T
+        model = didConvert?(model) ?? model
         return model
     }
-    
+
     /**是否存在表*/
     static var IsExistTable: Bool {
         let isExist = WRDatabase.shared.open() && WRDatabase.shared.tableExists(T.Table)
