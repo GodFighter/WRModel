@@ -593,7 +593,6 @@ fileprivate extension WRStruct_SQL {
     static func Sql_match(_ dictionaries: [[String : Any?]], _ isSet: Bool = false) -> String {
         var selectedString = ""
         
-        var index = 0
         for (index, dictionary) in dictionaries.enumerated() {
             let relation = isSet ? (index != dictionaries.count - 1 ? " , " : "") : (index != dictionaries.count - 1 ? " and " : "")
 
