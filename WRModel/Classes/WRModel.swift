@@ -12,6 +12,8 @@ import KakaJSON
 /**
 */
 public enum WRModelError: Error {
+        /**表不存在*/
+    case notExistTable
         /**打开数据库错误*/
     case openDBFailure
         /**缺少主键*/
@@ -181,9 +183,18 @@ fileprivate typealias WRStruct_Public = WRStruct
 public extension WRStruct_Public {
     /**创建模型*/
     /// - parameter json: 模型字典
+    /// - parameter willConvert: 转换前回调
+    /// - parameter didConvert: 转换后回调
     /// - returns: 模型对象
-    static func Create(json: [String : Any]) -> T {
-        return json.kj.model(type: T.self) as! T
+    static func Create(json: [String : Any?],
+                       _ willConvert: (([String : Any?]) -> ([String : Any?]))? = nil,
+                       _ didConvert: (([String : Any?]) -> Void)? = nil) -> T {
+
+        var json = json
+        json = willConvert?(json) ?? json
+        let model = json.kj.model(type: T.self) as! T
+        didConvert?(json)
+        return model
     }
     
     /**是否存在表*/
@@ -198,7 +209,15 @@ public extension WRStruct_Public {
 fileprivate typealias WRStruct_Selected = WRStruct
 public extension WRStruct_Selected {
     
-    
+    /**回调闭包定义-字典数组*/
+    typealias WRModelInfosCompleteBlock = ([[String : Any?]]?) -> Void
+    /**回调闭包定义-字典*/
+    typealias WRModelInfoCompleteBlock = ([String : Any?]) -> Void
+    /**回调闭包定义-模型数组*/
+    typealias WRModelsCompleteBlock = ([T]) -> Void
+    /**回调闭包定义-模型*/
+    typealias WRModelCompleteBlock = (T) -> Void
+
     /**查找所有数据信息*/
     /**
      模型所属数据库表单中的所有数据信息 或所有满足条件的数据信息
@@ -206,9 +225,14 @@ public extension WRStruct_Selected {
      keyValues 为 nil 时查询所有表中数据信息
      */
     /// - parameter keyValues: 键值字典
+    /// - parameter complete: 完成回调
     /// - returns: 数据字典数组
-    static func Select(allInfos keyValues: [[String : Any?]]? = nil) throws -> [[String : Any?]]? {
-        return try _Select(keyValues: keyValues)
+    static func SelectInfos(_ keyValues: [[String : Any?]]? = nil,
+                       complete:WRModelInfosCompleteBlock? = nil) throws -> [[String : Any?]]?
+    {
+        let modelInfos = try _Select(keyValues: keyValues)
+        complete?(modelInfos)
+        return modelInfos
     }
     
     /**查找所有数据模型*/
@@ -218,14 +242,18 @@ public extension WRStruct_Selected {
      keyValues 为 nil 时查询所有表中数据模型
     */
     /// - parameter keyValues: 键值字典
+    /// - parameter complete: 完成回调
     /// - returns: 模型数组
-    static func Select(allModels keyValues: [[String : Any?]]? = nil) throws -> [T]? {
-        guard let infos = try Select(allInfos: keyValues) else {
-            return nil
-        }
-        return infos.map { (info) -> T in
+    static func SelectModels(_ keyValues: [[String : Any?]]? = nil,
+                       complete:WRModelsCompleteBlock? = nil) throws -> [T]?
+    {
+        guard let infos = try SelectInfos(keyValues) else { return nil }
+        
+        let models = infos.map { (info) -> T in
             return Create(json: info)
         }
+        complete?(models)
+        return models
     }
     
     /**根据主键值查询信息*/
@@ -235,13 +263,17 @@ public extension WRStruct_Selected {
      实现 static var PrimaryKey : String? { get } 协议方法
     */
     /// - parameter value: 主键值
+    /// - parameter complete: 完成回调
     /// - returns: 模型信息
-    static func Select(primaryKeyInfo value: Any) throws -> [String : Any?]? {
-        guard let primaryKey = T.PrimaryKey else
-        {
-            throw WRModelError.selectFailure
-        }
-        return try _Select(infos: true, keyValues: [[primaryKey : value]])?.first
+    static func Select(primaryKeyInfo value: Any,
+                       complete:WRModelInfoCompleteBlock? = nil) throws -> [String : Any?]?
+    {
+        guard let primaryKey = T.PrimaryKey else { throw WRModelError.missPrimaryKey }
+        
+        guard let info = try _Select(isSingle: true, keyValues: [[primaryKey : value]])?.first else { return nil }
+        
+        complete?(info)
+        return info
     }
     
     /**根据主键值查询模型*/
@@ -251,29 +283,42 @@ public extension WRStruct_Selected {
      实现 static var PrimaryKey : String? { get } 协议方法
     */
     /// - parameter value: 主键值
+    /// - parameter complete: 完成回调
     /// - returns: 模型对象
-    static func Select(primaryKeyModel value: Any) throws -> T? {
-        guard let info = try Select(primaryKeyInfo: value) else {
-            return nil
-        }
-        return Create(json: info)
+    static func Select(primaryKeyModel value: Any,
+                       complete:WRModelCompleteBlock? = nil) throws -> T?
+    {
+        guard let info = try Select(primaryKeyInfo: value) else { return nil }
+        
+        let model = Create(json: info)
+        complete?(model)
+        return model
     }
     
     /**查找满足条件的单一数据信息*/
     /// - parameter keyValues: 查询条件，属性名值字典
+    /// - parameter complete: 完成回调
     /// - returns: 数据信息
-    static func Select(singleInfo keyValues: [[String : Any?]]) throws -> [String : Any?]? {
-        return try _Select(infos: true, keyValues: keyValues)?.first
+    static func Select(singleInfo keyValues: [[String : Any?]],
+                       complete:WRModelInfoCompleteBlock? = nil) throws -> [String : Any?]?
+    {
+        guard let info = try _Select(isSingle: true, keyValues: keyValues)?.first else { return nil }
+        
+        complete?(info)
+        return info
     }
     
     /**查找满足条件的单一数据对象*/
     /// - parameter keyValues: 查询条件，属性名值字典
+    /// - parameter complete: 完成回调
     /// - returns: 数据对象
-    static func Select(singleModel keyValues: [[String : Any?]]) throws -> T? {
-        guard let info = try Select(singleInfo: keyValues) else {
-            return nil
-        }
-        return Create(json: info)
+    static func Select(singleModel keyValues: [[String : Any?]],
+                       complete:WRModelCompleteBlock? = nil) throws -> T? {
+        guard let info = try Select(singleInfo: keyValues) else { return nil }
+        
+        let model = Create(json: info)
+        complete?(model)
+        return model
     }
 
     /**分页查找数据信息*/
@@ -284,27 +329,35 @@ public extension WRStruct_Selected {
     /// - parameter descs: 排序方式数组
     /// - parameter pageCount: 每页个数
     /// - parameter pageNumber: 当前页码
+    /// - parameter complete: 完成回调
     /// - returns: 模型信息数组
-    static func Select(sortInfos keys: [String], descs: [Bool] = [false], pageCount: Int = 10, pageNumber: Int = 0) throws -> [[String : Any?]]? {
-        guard IsExistTable else { return nil}
+    static func Select(sortInfos keys: [String],
+                       descs: [Bool] = [false],
+                       pageCount: Int = 10,
+                       pageNumber: Int = 0,
+                       complete:WRModelInfosCompleteBlock? = nil) throws -> [[String : Any?]]?
+    {
+        
+        guard IsExistTable else { throw WRModelError.notExistTable }
 
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            WRDatabase.shared.close()
-            throw WRModelError.openDBFailure
-        }
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{ WRDatabase.shared.close(); throw WRModelError.openDBFailure}
 
         var infos: [[String : Any?]]? = []
         var keysString = ""
-        for (index, key) in keys.enumerated() {
+        for (index, key) in keys.enumerated()
+        {
             let desc = descs.count > index ? descs[index] : (descs.first ?? false)
             let descString = desc ? "desc" : "asc"
             keysString += key + " " + descString + (index >= keys.count - 1 ? "" : ", ")
         }
         let selectSql = "select * from \(T.Table) order by \(keysString) limit \(pageCount) offset \(pageNumber * pageCount)"
 
-        if let result = WRDatabase.shared.executeQuery(selectSql, withArgumentsIn: []) {
-            while result.next() {
-                if let info = result.resultDictionary as? [String : Any?] {
+        if let result = WRDatabase.shared.executeQuery(selectSql, withArgumentsIn: [])
+        {
+            while result.next()
+            {
+                if let info = result.resultDictionary as? [String : Any?]
+                {
                     infos?.append(info)
                 } else {
                     result.close()
@@ -315,7 +368,7 @@ public extension WRStruct_Selected {
             result.close()
         }
         WRDatabase.shared.close()
-
+        complete?(infos)
         return infos
     }
     
@@ -327,23 +380,29 @@ public extension WRStruct_Selected {
     /// - parameter descs: 排序方式数组
     /// - parameter pageCount: 每页个数
     /// - parameter pageNumber: 当前页码
+    /// - parameter complete: 完成回调
     /// - returns: 模型对象数组
-    static func Select(sortModels keys: [String], descs: [Bool] = [false], pageCount: Int = 10, pageNumber: Int = 0) throws -> [T]? {
-        guard let infos = try Select(sortInfos: keys, descs: descs, pageCount: pageCount, pageNumber: pageNumber) else {
-            return nil
-        }
-        return infos.map { (info) -> T in
+    static func Select(sortModels keys: [String],
+                       descs: [Bool] = [false],
+                       pageCount: Int = 10,
+                       pageNumber: Int = 0,
+                       complete:WRModelsCompleteBlock? = nil) throws -> [T]?
+    {
+        guard let infos = try Select(sortInfos: keys, descs: descs, pageCount: pageCount, pageNumber: pageNumber) else { return nil }
+        let models = infos.map { (info) -> T in
             return Create(json: info)
         }
+        complete?(models)
+        return models
     }
     
-    private static func _Select(infos isSingle: Bool = false, keyValues:[[String : Any?]]? = nil) throws -> [[String : Any?]]? {
-        guard IsExistTable else { return nil}
+    private static func _Select(isSingle: Bool = false,
+                                keyValues:[[String : Any?]]? = nil) throws -> [[String : Any?]]?
+    {
+        guard IsExistTable else { throw WRModelError.notExistTable }
         
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            WRDatabase.shared.close()
-            throw WRModelError.openDBFailure
-        }
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{ WRDatabase.shared.close(); throw WRModelError.openDBFailure }
+        
         var models: [[String : Any?]]? = []
         let selectSql = Sql_selected(keyValues == nil ? true : false, keyValues)
 
@@ -374,11 +433,15 @@ public extension WRStruct_Save {
     /**保存对象*/
     /**
     */
-    func save() throws {
-        guard WRDatabase.shared.open() else {
-            throw WRModelError.openDBFailure
-        }
-        if !WRDatabase.shared.tableExists("\(T.Table)") {
+    /// - parameter willConvert: 转换前回调
+    /// - parameter didConvert: 转换后回调
+    func save(_ willConvert: ((T) -> Void)? = nil,
+              _ didConvert: ((T) -> Void)? = nil) throws
+    {
+        guard WRDatabase.shared.open() else { throw WRModelError.openDBFailure }
+        
+        if !WRDatabase.shared.tableExists("\(T.Table)")
+        {
             WRDatabase.shared.executeUpdate(WRStruct.Sql_createTable, withArgumentsIn: [])
         }
         WRDatabase.shared.close()
@@ -397,10 +460,14 @@ public extension WRStruct_Save {
             return WRStruct.Value(with: property, for: self.base)
         }
         
-        if !WRDatabase.shared.executeUpdate(insertSql, withArgumentsIn: values) {
+        willConvert?(base)
+        
+        if !WRDatabase.shared.executeUpdate(insertSql, withArgumentsIn: values)
+        {
             throw WRModelError.saveFailure
         }
         WRDatabase.shared.close()
+        didConvert?(base)
     }
 }
 
@@ -414,33 +481,37 @@ public extension WRStruct_Delete {
     */
     /// - parameter isAll: 是否全部删除
     /// - parameter keyValues: 待删除键值对 ，属性名 ： 属性值
-    static func Delete(all isAll: Bool = true, keyValues: [[String : Any?]]? = nil) throws {
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            WRDatabase.shared.close()
-            throw WRModelError.openDBFailure
-        }
+    /// - parameter willConvert: 转换前回调
+    /// - parameter didConvert: 转换后回调
+    static func Delete(all isAll: Bool = true,
+                       keyValues: [[String : Any?]]? = nil,
+                       _ willConvert: (() -> Void)? = nil,
+                       _ didConvert: (() -> Void)? = nil) throws
+    {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{ WRDatabase.shared.close(); throw WRModelError.openDBFailure }
         
         let deleteSql = isAll ? Sql_delete(true) : Sql_delete(false, keyValues)
-        guard WRDatabase.shared.executeUpdate(deleteSql, withArgumentsIn: []) else {
-            WRDatabase.shared.close()
-            throw WRModelError.deleteFailure
-        }
+        willConvert?()
+        guard WRDatabase.shared.executeUpdate(deleteSql, withArgumentsIn: []) else { WRDatabase.shared.close(); throw WRModelError.deleteFailure }
         WRDatabase.shared.close()
 
+        didConvert?()
     }
         
     /**对象从数据库删除*/
-    func delete() throws {
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            WRDatabase.shared.close()
-            throw WRModelError.openDBFailure
-        }
+    /// - parameter willConvert: 转换前回调
+    /// - parameter didConvert: 转换后回调
+    func delete(_ willConvert: ((T) -> Void)? = nil,
+                _ didConvert: ((T) -> Void)? = nil) throws
+    {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{ WRDatabase.shared.close(); throw WRModelError.openDBFailure }
 
-        guard WRDatabase.shared.executeUpdate(WRStruct.Sql_delete(self.base), withArgumentsIn: []) else {
-            WRDatabase.shared.close()
-            throw WRModelError.deleteFailure
-        }
+        willConvert?(base)
+        
+        guard WRDatabase.shared.executeUpdate(WRStruct.Sql_delete(self.base), withArgumentsIn: []) else { WRDatabase.shared.close(); throw WRModelError.deleteFailure }
         WRDatabase.shared.close()
+        
+        didConvert?(base)
     }
 }
 
@@ -454,54 +525,65 @@ public extension WRStruct_Update {
     replaceValue 替换值
     */
     /// - parameter modifyInfos: 修改信息
-    static func Update(_ modifyInfos: [(column: String, originalValue: Any?, replaceValue: Any?)]) throws {
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            WRDatabase.shared.close()
-            throw WRModelError.openDBFailure
-        }
+    /// - parameter willConvert: 转换前回调
+    /// - parameter didConvert: 转换后回调
+    static func Update(_ modifyInfos: [(column: String, originalValue: Any?, replaceValue: Any?)],
+                       _ willConvert: (() -> Void)? = nil,
+                       _ didConvert: (() -> Void)? = nil) throws
+    {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{ WRDatabase.shared.close(); throw WRModelError.openDBFailure }
         
         let sql = Sql_update(modifyInfos)
-        guard WRDatabase.shared.executeUpdate(sql, withArgumentsIn: []) else {
-            WRDatabase.shared.close()
-            throw WRModelError.updateFailure
-        }
+        
+        willConvert?()
+        guard WRDatabase.shared.executeUpdate(sql, withArgumentsIn: []) else { WRDatabase.shared.close(); throw WRModelError.updateFailure }
         WRDatabase.shared.close()
+        didConvert?()
     }
 
     /**更新对象*/
-    func update() throws {
-        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{
-            WRDatabase.shared.close()
-            throw WRModelError.openDBFailure
-        }
+    /**
+     无主键直接保存
+     
+     查询不到更新对象，直接保存
+     */
+    /// - parameter willConvert: 转换前回调
+    /// - parameter didConvert: 转换后回调
+    func update(_ willConvert: ((T) -> Void)? = nil,
+                _ didConvert: ((T) -> Void)? = nil) throws
+    {
+        guard WRDatabase.shared.goodConnection ||  WRDatabase.shared.open() else{ WRDatabase.shared.close(); throw WRModelError.openDBFailure }
         
         // 无主键直接保存
-        guard let _ = T.PrimaryKey else {
-            try save()
-            return
-        }
+        guard let _ = T.PrimaryKey else { try save(willConvert, didConvert); return }
         
         let updateSql = WRStruct.Sql_update(self.base)
         
-        if let results = WRDatabase.shared.executeQuery(WRStruct.Sql_selected(self.base), withArgumentsIn: []) {
-            if results.next() {
+        if let results = WRDatabase.shared.executeQuery(WRStruct.Sql_selected(self.base), withArgumentsIn: [])
+        {
+            if results.next()
+            {
                 results.close()
 
                 let values = WRStruct.DBProperties.map { (property) -> Any in
                     return WRStruct.Value(with: property, for: self.base)
                 }
+                willConvert?(base)
                 guard WRDatabase.shared.executeUpdate(updateSql, withArgumentsIn: values) else {
                     results.close()
                     WRDatabase.shared.close()
                     throw WRModelError.updateFailure
                 }
             } else {
-                try save()
+                // 未查到直接保存
+                try save(willConvert, didConvert)
             }
         } else {
-            try save()
+            // 未查到直接保存
+            try save(willConvert, didConvert)
         }
         WRDatabase.shared.close()
+        didConvert?(base)
     }
 }
 

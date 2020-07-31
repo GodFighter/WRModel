@@ -16,7 +16,7 @@ import KakaJSON
 //    }
 //}
 
-struct WRGoodsEvaluate: WRModelProtocol {
+struct WRGoodsEvaluate: WRModelProtocol {    
     var gevalId: String = ""
     var gevalAddTime: Int64?
     var gevalScore: Int = 0
@@ -51,6 +51,7 @@ enum EnumInt: Int, ConvertibleEnum {
 }
 
 struct WRGoods: WRModelProtocol {
+    
     static var ExchangePropertys: [[String : String]] {
         return [["evaluates" : "evaluateGoodsList"] , ["activities" : "shopActivityList"]]
     }
@@ -66,7 +67,7 @@ struct WRGoods: WRModelProtocol {
     static var PrimaryKey: String? {
         return "goodsId"
     }
-    
+        
     var goodsId: String = ""
     var goodsName: String = ""
     var goodsNameMn: String?
@@ -84,7 +85,8 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        select()
+//        select()
+        save()
     }
     
     func save() {
@@ -101,18 +103,39 @@ class ViewController: UIViewController {
                 return
             }
             
-            var dataJson : [String : Any] = [:]
+            var dataJson : [String : Any?] = [:]
             do {
                 dataJson = try JSONSerialization.jsonObject(with: data!, options: .mutableContainers) as! [String : Any]
             } catch {
                 print("error")
             }
             
-            let object = WRGoods.Model.Create(json: dataJson)
+            let object = WRGoods.Model.Create(json: dataJson, { (json) -> ([String : Any?]) in
+                var json = json
+                json["goodsName"] = "123456"
+                return json
+            })
+//            { (info) in
+//                print(0987)
+//            }
             
-            try object.model.save()
+//            let object = WRGoods.Model.Create(json: dataJson) { (timeMode, info) -> ([String : Any?]) in
+//                var json = info
+//                switch timeMode {
+//                case .will:
+//                    json["goodsName"] = "123456"
+//                case .did:
+//                    print("23456")
+//                }
+//                return json
+//            }
             
-            print(object)
+            try object.model.save({ (model) in
+                print(model)
+            })
+            
+            
+//            print(object)
        } catch let error {
             print(error)
         }
@@ -120,9 +143,10 @@ class ViewController: UIViewController {
     }
     
     func select() {
-        let goods = try? WRGoods.Model.Select(sortInfos: ["goodsStorePrice"], descs: [false], pageCount: 1, pageNumber: 0)
+        let goods = try? WRGoods.Model.Select(primaryKeyModel: "e719a33329644fd08e83a7500fbddbe92")
+//        let goods = try? WRGoods.Model.Select(sortInfos: ["goodsStorePrice"], descs: [false], pageCount: 1, pageNumber: 0)
         
-        print(goods)
+        print(goods as Any)
     }
 
     override func didReceiveMemoryWarning() {
