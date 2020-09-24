@@ -321,10 +321,10 @@ public extension WRStruct_Selected {
         return model
     }
 
-    /**分页查找数据信息*/
-    /**
-    根据属性名、排序方式分页查找数据信息
-    */
+    /// 分页查找数据信息
+    ///
+    /// 根据属性名、排序方式分页查找数据信息
+    ///
     /// - parameter keys: 属性名数组
     /// - parameter descs: 排序方式数组
     /// - parameter pageCount: 每页个数
